@@ -103,11 +103,11 @@ Khối lượng kế hoạch: khoảng 12 giờ/người/tuần. Mốc bàn giao
 
 Nhóm gồm **5 sinh viên năm 3 ngành Trí tuệ nhân tạo**. Phân vai theo đầu ra chuyên môn, có mốc bàn giao để các thành viên làm song song:
 
-1. [Trưởng nhóm — Dữ liệu và đánh giá](01_thanh_vien_1_truong_nhom_du_lieu_danh_gia.md): đề cương, quy chuẩn dữ liệu, kiểm soát test và báo cáo tổng hợp.
-2. [Âm thanh — Nhận dạng lời nói](02_thanh_vien_2_am_thanh_ASR.md): ASR tiếng Việt, đặc trưng âm thanh và baseline 10 câu.
-3. [Thị giác — Khẩu hình](03_thanh_vien_3_thi_giac_khau_hinh.md): vùng miệng, đặc trưng chuyển động và baseline hình ảnh.
-4. [AI đa phương thức — Tích hợp](04_thanh_vien_4_ket_hop_model_tich_hop.md): đồng bộ, kết hợp model và pipeline suy luận.
-5. [Ứng dụng — Hiển thị và phần cứng](05_thanh_vien_5_ung_dung_hien_thi_phan_cung.md): giao diện phụ đề, thử khả dụng và khảo sát kính.
+1. [Trưởng nhóm — Dữ liệu và đánh giá](docs/plans/01_thanh_vien_1_truong_nhom_du_lieu_danh_gia.md): đề cương, quy chuẩn dữ liệu, kiểm soát test và báo cáo tổng hợp.
+2. [Âm thanh — Nhận dạng lời nói](docs/plans/02_thanh_vien_2_am_thanh_ASR.md): ASR tiếng Việt, đặc trưng âm thanh và baseline 10 câu.
+3. [Thị giác — Khẩu hình](docs/plans/03_thanh_vien_3_thi_giac_khau_hinh.md): vùng miệng, đặc trưng chuyển động và baseline hình ảnh.
+4. [AI đa phương thức — Tích hợp](docs/plans/04_thanh_vien_4_ket_hop_model_tich_hop.md): đồng bộ, kết hợp model và pipeline suy luận.
+5. [Ứng dụng — Hiển thị và phần cứng](docs/plans/05_thanh_vien_5_ung_dung_hien_thi_phan_cung.md): giao diện phụ đề, thử khả dụng và khảo sát kính.
 
 Mỗi tài liệu có nhiệm vụ theo tuần, kiến thức cần học, nguồn học, yêu cầu báo cáo và phương án xử lý khi chậm tiến độ. Thành viên mới nên đọc tài liệu số 1 trước.
 
@@ -142,14 +142,20 @@ Mỗi khoản đầu tư vào phát triển nên gắn với một mốc kiểm 
 
 ```text
 auralens-avsr/
+├── AGENTS.md
 ├── README.md
 ├── .gitignore
-├── 01_thanh_vien_1_truong_nhom_du_lieu_danh_gia.md
-├── 02_thanh_vien_2_am_thanh_ASR.md
-├── 03_thanh_vien_3_thi_giac_khau_hinh.md
-├── 04_thanh_vien_4_ket_hop_model_tich_hop.md
-└── 05_thanh_vien_5_ung_dung_hien_thi_phan_cung.md
+└── docs/
+    ├── plans/               # Phân công cho TV1–TV5
+    └── progress/
+        ├── README.md       # Quy trình báo cáo và định nghĩa trạng thái
+        ├── week-01/        # TV1.md ... TV5.md
+        ├── week-02/
+        ├── week-03/
+        └── week-04/
 ```
+
+Xem [quy trình cập nhật tiến độ](docs/progress/README.md) và [luật chung cho agent](AGENTS.md). Mỗi thành viên cập nhật báo cáo tuần trong cùng PR với công việc; tiến độ chính thức nằm trên `main` sau review. Các báo cáo khởi tạo hiện ở trạng thái chưa báo cáo.
 
 Repository được khởi tạo ở chế độ **Private** để nhóm phát triển tài liệu và nguyên mẫu. Chưa có hướng dẫn cài/chạy ứng dụng vì mã ứng dụng chưa được triển khai.
 
