@@ -1,0 +1,47 @@
+# Python environments and generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+
+# Credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Participant recordings, identity records and model artifacts
+data/
+datasets/
+recordings/
+consent/
+checkpoints/
+weights/
+*.wav
+*.mp3
+*.mp4
+*.avi
+*.mov
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.joblib
+
+# Runtime output
+logs/
+runs/
+*.log
