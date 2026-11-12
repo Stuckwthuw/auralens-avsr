@@ -71,7 +71,7 @@ Giữ nhất quán với bản phân công TV4; khi hiện thực, đưa quy t�
 
 - Mỗi người dùng clone/worktree và nhánh riêng; không để nhiều agent sửa cùng checkout. Nhánh gợi ý: `feat/tv2-audio-baseline`, `fix/tv4-score-validation`, `docs/tv1-evaluation`.
 - Mỗi PR giải quyết một việc có thể review. Không trộn nâng dependency, format toàn repo và thay thuật toán trong một PR.
-- Không commit trực tiếp lên `main` khi nhóm đã bắt đầu cộng tác; dùng PR và ít nhất một người review. Đây là quy ước nhóm, không tự động đồng nghĩa branch protection đã được bật.
+- Agent không commit/push trực tiếp lên `main` và không tự merge; dùng nhánh nhiệm vụ và PR có ít nhất một người review. Người phụ trách tích hợp của nhóm quyết định merge theo mục 13. Đây là quy ước nhóm, không tự động đồng nghĩa branch protection đã được bật.
 - Người review kiểm tra vùng ảnh hưởng; PR thay hợp đồng phải có người phụ trách producer/consumer liên quan xác nhận.
 - Không force-push nhánh chung, xóa nhánh/chỉnh lịch sử của người khác hoặc chạy lệnh hủy dữ liệu để sửa conflict. Giữ thay đổi hai bên và kiểm tra lại sau khi giải quyết conflict.
 - Cập nhật từ main trước khi kết thúc PR và chạy lại kiểm tra liên quan khi có thay đổi ảnh hưởng. Không merge chỉ vì không có conflict văn bản.
@@ -140,3 +140,19 @@ Vướng mắc, cách tái hiện, điều đã thử:
 - `AGENTS.md` chứa luật ổn định, không phải nhật ký task. Không sửa bộ luật mỗi lần xong việc. Quyết định thiết kế vào docs/decisions; ghi chú bàn giao chi tiết vào docs/handoffs khi cần, báo cáo tuần dẫn liên kết thay vì nhân bản.
 - Khi không có quyền push/PR hoặc offline: cập nhật local, ghi trạng thái chưa đồng bộ remote và bàn giao hướng dẫn. Không báo GitHub đã cập nhật khi chưa xác minh.
 - Chỉ dẫn này áp dụng trong phiên agent đang chạy; không tạo automation nền hay hứa tự cập nhật nếu không có phiên thực thi.
+
+## 13. Nhánh nhiệm vụ, review độc lập và quyền bảo vệ main
+
+- Mỗi task có nhánh riêng theo người và mục đích: `feat/tv2-audio-baseline`, `feat/tv3-mouth-features`, `fix/tv4-score-validation`, `docs/tv1-week01-progress`. Không dùng một nhánh TV1/TV2 dài hạn cho toàn dự án hoặc trộn nhiều task độc lập.
+- Trước khi sửa, xác nhận đang ở đúng nhánh nhiệm vụ và checkout/worktree của mình. Nếu đang ở main, tạo nhánh phù hợp trước; không tự bỏ, reset hoặc chuyển các thay đổi của người khác.
+- Trong phạm vi nhiệm vụ được người dùng giao, agent được tạo nhánh, sửa file, chạy kiểm tra, commit, push nhánh và mở/cập nhật PR. Không cần hỏi lại cho từng bước thường lệ này. Nếu chưa có quyền remote, bàn giao local và ghi rõ chưa push.
+- Báo cáo tuần, mã và tài liệu liên quan nằm trong cùng nhánh/PR; commit nhỏ, mô tả đúng thay đổi. Có thể mở PR sớm và ghi rõ phần chưa hoàn thành để nhóm theo dõi mà không chờ merge.
+- Trao đổi review tại PR gắn với nhánh nhiệm vụ. Reviewer hoặc agent được giao review có thể comment, nêu lỗi và đề xuất sửa; tác giả cập nhật chính nhánh đó. Không tự gửi nhận xét dưới danh nghĩa người khác hoặc tự nhận có review khi chưa có.
+- Agent không tự approve PR của chính mình, không tự đánh dấu review độc lập đã đạt. Review hỗ trợ từ AI phải được nhận diện là hỗ trợ; không thay thế xác nhận của người chịu trách nhiệm trong nhóm.
+- **Agent không được merge PR vào main, bật auto-merge, push trực tiếp lên main, force-push main, hoặc thay cấu hình để bỏ qua kiểm tra/review.** Cấm cả merge thường, squash và rebase merge bằng UI, CLI, API hay automation. Yêu cầu chung như “hoàn thành task” không bao gồm quyền merge.
+- Một người thật do nhóm chỉ định giữ vai trò phụ trách tích hợp. Khi đã có review, kiểm tra liên quan đạt và các lỗi chặn được xử lý, người đó kiểm tra bản cuối và tự quyết định/thực hiện merge. Khi chưa chỉ định người này, agent để PR ở trạng thái chờ review/tích hợp; không tự chọn người hoặc tự nhận vai trò.
+- Trước bàn giao PR, cập nhật với main bằng thao tác an toàn trong nhánh riêng, kiểm tra conflict và chạy lại phần bị ảnh hưởng. Main thay đổi làm kết quả review không còn phù hợp thì yêu cầu kiểm tra lại; không coi review cũ là bảo đảm vô điều kiện.
+- Báo cáo READY FOR REVIEW khi đủ bằng chứng, REVIEWED khi có xác nhận độc lập, INTEGRATED sau khi xác minh merge và luồng tích hợp thật. Không ghi đã merge hoặc đã ổn định chỉ vì PR không có conflict.
+- Nếu cần dùng thay đổi của người khác trước khi merge, ghi phụ thuộc và base branch/commit trong PR; dùng mock/adapter khi phù hợp. Không tự merge nhánh của họ vào main để gỡ chặn.
+- Branch protection/ruleset là cơ chế thực thi bổ sung của GitHub, không do file này tự bật. Agent không thay quyền, ruleset hay trạng thái bảo vệ trong nhiệm vụ thông thường; báo đúng cấu hình đã kiểm tra, không hứa main được bảo vệ kỹ thuật chỉ từ quy ước.
+- Nhánh ngắn hạn kết thúc theo quyết định của người phụ trách sau khi tích hợp; không tự xóa nhánh của người khác hoặc xóa nhánh còn công việc chưa bàn giao.
