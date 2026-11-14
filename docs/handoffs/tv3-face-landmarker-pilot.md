@@ -25,3 +25,13 @@ Clip thứ ba dài 2,558 giây, 1920 × 1080, 68 frame: `num_faces=1` trả đi�
 Người nhận và việc có thể làm tiếp: TV4 xem schema timestamp/invalid và chốt hợp đồng chung; TV3 xác nhận clip thứ ba có đúng một câu, kiểm tra chất lượng crop trên cả đoạn và bổ sung phép kiểm nhiều người trước tích hợp; TV5 phối hợp thử webcam tích hợp. Script này chưa ở trạng thái READY FOR REVIEW cho tích hợp.
 
 Vướng mắc, cách tái hiện, điều đã thử: clip đầu thay đổi khoảng cách/hướng mặt nên tỷ lệ frame phát hiện thấp. Clip mới ổn định hơn nhưng với `num_faces=2` model bỏ lỡ nhiều frame dù ảnh vẫn thấy mặt; `num_faces=1` giải quyết trường hợp một người trên clip này. [Tài liệu MediaPipe](https://developers.google.com/edge/mediapipe/solutions/vision/face_landmarker?hl=en) ghi chế độ làm mượt chỉ áp dụng khi `num_faces=1`. Chưa hiệu chỉnh ngưỡng trên dev; chưa kiểm tra ca nhiều người.
+
+## Bổ sung kiểm tra ba ca khó ngày 2026-11-14
+
+Chạy cùng script, model SHA-256 và môi trường nêu trên với `num_faces=1`; đầu ra JSON nằm trong `%TEMP%\auralens-tv3-negative-165042`, `...-165029` và `...-165125`, không đưa vào Git. Quan sát contact sheet lấy khoảng mỗi giây để mô tả điều kiện; đây là nhận xét trực quan, không phải nhãn tự động.
+
+- `WIN_20261114_16_50_42_Pro.mp4`: mặt quay sang bên rồi cúi xuống, 1920 × 1080, 162 frame, timestamp 0–6432 ms. Kết quả 0/162 frame có landmarks, 162 frame `no_face`.
+- `WIN_20261114_16_50_29_Pro.mp4`: phần lớn khung hình trống, đôi lúc người đi sát mép khung hình; không gọi đây là clip hoàn toàn không có người. 1920 × 1080, 175 frame, timestamp 0–6160 ms. Kết quả 0/175 frame có landmarks, 175 frame `no_face`.
+- `WIN_20261114_16_51_25_Pro.mp4`: một người đứng xa camera, bàn tay che miệng xuyên suốt ảnh lấy mẫu. 1920 × 1080, 196 frame, timestamp 0–6768 ms. Kết quả 0/196 frame có landmarks, 196 frame `no_face`.
+
+Ba clip đều bị từ chối ở bước phát hiện mặt. Vì vậy clip che miệng **chưa kiểm tra được** khả năng phân biệt miệng bị che sau khi đã phát hiện mặt; khoảng cách và kích thước mặt cũng có thể ảnh hưởng. `no_face` chỉ có nghĩa Face Landmarker không trả landmarks, không khẳng định khung hình hoàn toàn không có người. Bước tiếp theo của TV3: quay một clip che miệng ở khoảng cách 20–50 cm, cùng vị trí/ánh sáng với clip mặt rõ, rồi so sánh theo frame; chưa hiệu chỉnh thuật toán bằng ba ca khó này và chưa đánh dấu READY FOR REVIEW cho tích hợp.

@@ -38,6 +38,7 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 - Pilot thứ ba: 1920 × 1080, 2,558 giây, 68 frame; `num_faces=1` cho 68/68 frame có điểm môi (100%), timestamp từ 0 đến 2.512 ms. 10 timestamp đầu khớp `ffprobe` sau làm tròn. Các frame đã xem có một người, mặt gần như giữ vị trí; ở khoảng giây 1,84 thấy miệng mở rõ. Crop có điểm môi tại khoảng giây 1 rộng 123 px, cao 80 px. Chưa xác nhận nội dung câu nói hay nhãn.
 - Timestamp đọc từ video theo mili giây: hai clip bắt đầu 0 ms, kết thúc lần lượt 12.960 ms và 7.408 ms; 10 timestamp đầu của mỗi clip khớp `ffprobe` sau làm tròn. Ảnh crop ở khoảng 1 và 5 giây được xem trực quan, điểm môi bám vùng miệng. Vùng crop của clip mới rộng khoảng 84–95 px ở hai mốc này; chất lượng cho phân loại câu chưa được kiểm tra. Ảnh và landmarks chỉ lưu cục bộ ngoài Git.
 - Script đã chạy trên ba clip thật; kiểm tra từ chối `--output` trong repo và yêu cầu xác nhận một người; `compileall` đạt. Chưa lưu log của phép đo webcam 640 × 480 trước đó; chưa đo tỷ lệ frame hợp lệ trên 20 clip pilot hoặc đánh giá khả năng phân loại câu.
+- Ba ca khó bổ sung ngày 2026-11-14, cùng MediaPipe Face Landmarker `num_faces=1`: quay nghiêng/cúi mặt 0/162 frame có landmarks; khung hình phần lớn trống, người đôi lúc ở sát mép 0/175; che miệng bằng tay khi đứng xa 0/196. Tất cả frame còn lại trả `no_face`; số này là kết quả phát hiện landmarks, không phải kết luận về khả năng đọc khẩu hình. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md) để biết clip, timestamp và giới hạn. Video/ảnh/JSON chỉ lưu ngoài Git. Ca che miệng chưa kiểm tra được occlusion khi mặt được phát hiện.
 
 ## 5. Vướng mắc và hỗ trợ cần thiết
 
@@ -50,3 +51,5 @@ Chưa báo cáo; không suy ra là không có vướng mắc. Ghi lỗi, cách t
 ## 7. Việc tiếp theo và thời gian thực tế
 
 Xác nhận bài thử webcam với TV5 và lưu log đo 640 × 480 để tái lập. Xác nhận nội dung và nhãn của clip thứ ba, kiểm tra đủ chi tiết miệng cho bài 10 câu; thử thêm ca không thấy mặt/nhiều mặt trong phạm vi pilot. Phối hợp TV4 về schema trước khi bàn giao mẫu tích hợp. Thời gian đã dùng: chưa báo cáo.
+
+Sau ba ca khó đã thử, cần quay lại ca che miệng ở 20–50 cm với mặt hướng camera và một clip đối chứng không che ở cùng vị trí/ánh sáng. Ca nhiều người vẫn chưa kiểm tra; không suy từ ba clip trên. PR pilot tiếp tục chờ review/tích hợp theo quy trình nhóm.
