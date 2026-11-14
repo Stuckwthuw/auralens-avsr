@@ -3,10 +3,10 @@
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-14, số đo webcam do Hoàng Hiếu cung cấp.
+- Cập nhật lần cuối: 2026-11-14, số đo webcam và quan sát khoảng cách do Hoàng Hiếu cung cấp.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Mới có số đo webcam do người phụ trách báo cáo; các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Mới có số đo webcam và quan sát trực tiếp do người phụ trách báo cáo; các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
@@ -19,7 +19,7 @@
 
 ## 2. Công việc thực tế và trạng thái
 
-Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480 và FPS thực đo 27,1. Chưa ghi nhận điều kiện ánh sáng, khoảng cách và độ rõ vùng miệng nên chưa đánh dấu hoàn thành checklist ngày 1.
+Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480, FPS thực đo 27,1 và quan sát vùng miệng dưới đèn phòng ở ba khoảng cách bên dưới. Chưa xác nhận thử cùng TV5 nên chưa đánh dấu hoàn thành checklist ngày 1.
 
 ## 3. Kiến thức đã học và áp dụng
 
@@ -28,6 +28,7 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 ## 4. Kiểm tra và số liệu
 
 - Webcam trên máy tính của Hoàng Hiếu: 640 × 480; FPS thực đo: 27,1 (số liệu người phụ trách cung cấp trong phiên trao đổi ngày 2026-11-14).
+- Quan sát dưới đèn phòng do Hoàng Hiếu báo cáo: 20–50 cm — miệng rõ, không bị che; 70 cm — thấy miệng nhưng khẩu hình chưa rõ; 100 cm — thấy miệng nhưng không thấy được khẩu hình khi nói. Đây là nhận xét trực quan, chưa phải tỷ lệ frame hợp lệ hoặc kết quả model.
 - Chưa lưu lệnh, log đo, thời lượng đo và cấu hình camera để người khác chạy lại; chưa đo tỷ lệ frame hợp lệ hoặc kiểm tra landmarks.
 
 ## 5. Vướng mắc và hỗ trợ cần thiết
@@ -40,4 +41,4 @@ Chưa bàn giao. Ghi người nhận, cách chạy, hợp đồng liên quan, li
 
 ## 7. Việc tiếp theo và thời gian thực tế
 
-Ghi điều kiện ánh sáng, khoảng cách và đánh giá độ rõ vùng miệng ở 640 × 480; lưu lệnh/log đo để tái lập. Sau đó thử clip pilot và trích landmarks/crop theo kế hoạch. Thời gian đã dùng: chưa báo cáo.
+Xác nhận bài thử webcam với TV5, lưu lệnh/log đo để tái lập và dùng khoảng cách 20–50 cm dưới đèn phòng cho clip pilot ban đầu. Sau đó trích landmarks/crop theo kế hoạch. Thời gian đã dùng: chưa báo cáo.
