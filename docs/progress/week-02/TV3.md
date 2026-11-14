@@ -1,6 +1,6 @@
-# TV3 — Tuần 02: Học bộ phân loại khẩu hình 10 câu
+# TV3 — Hoàng Hiếu — Tuần 02: Học bộ phân loại khẩu hình 10 câu
 
-- Người phụ trách: chưa điền tên.
+- Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: CHƯA BÁO CÁO.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
 - Cập nhật lần cuối: chưa có báo cáo thực hiện.

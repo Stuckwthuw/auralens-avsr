@@ -1,6 +1,6 @@
-# TV3 — Tuần 04: Hỗ trợ đánh giá và trình bày giới hạn
+# TV3 — Hoàng Hiếu — Tuần 04: Hỗ trợ đánh giá và trình bày giới hạn
 
-- Người phụ trách: chưa điền tên.
+- Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: CHƯA BÁO CÁO.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
 - Cập nhật lần cuối: chưa có báo cáo thực hiện.
