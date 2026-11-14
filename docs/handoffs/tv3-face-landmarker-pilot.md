@@ -2,9 +2,9 @@
 
 Task / người phụ trách / nhánh / commit: thử trích vùng miệng tuần 1 / Hoàng Hiếu / `feat/tv3-hoang-hieu-mouth-pilot` / `a6ce501` (script; báo cáo và bàn giao trong cùng nhánh).
 
-Đầu ra và file/module thay đổi: `auralens/vision/pilot_landmarks.py`, `auralens/vision/requirements-pilot.txt`, `docs/progress/week-01/TV3.md`. Script đọc video từng frame, giữ timestamp mili giây của nguồn, trả `no_face` hoặc `multiple_faces` khi không có đúng một mặt, và ghi ảnh crop có điểm môi. Ảnh/JSON chứa dữ liệu khuôn mặt chỉ ghi ra thư mục ngoài Git.
+Đầu ra và file/module thay đổi: `auralens/vision/pilot_landmarks.py`, `auralens/vision/requirements-pilot.txt`, `docs/progress/week-01/TV3.md`. Script đọc video từng frame ở độ phân giải gốc, giữ timestamp mili giây của nguồn, trả `no_face` khi model không tìm thấy mặt và ghi ảnh crop có điểm môi. Script chưa tự phát hiện nhiều mặt. Ảnh/JSON chứa dữ liệu khuôn mặt chỉ ghi ra thư mục ngoài Git.
 
-Hợp đồng dùng hoặc thay đổi: chưa có hợp đồng TV4. JSON có `pilot_only: true`, `sample_id`, danh sách chỉ số điểm môi và các frame `{timestamp_ms, valid, reason, lip_landmarks}` để khảo sát; không được dùng như đầu ra tích hợp hoặc benchmark. Script dùng `num_faces=1` để theo dõi một người và yêu cầu `--single-person-confirmed`; nó không tự phát hiện clip nhiều người. `valid` chỉ là điều kiện model trả điểm môi sau xác nhận thủ công, chưa kiểm tra chất lượng khẩu hình.
+Hợp đồng dùng hoặc thay đổi: chưa có hợp đồng TV4. JSON có `pilot_only: true`, `sample_id`, `source_width_px`, `source_height_px`, danh sách chỉ số điểm môi và các frame `{timestamp_ms, valid, reason, lip_landmarks}` để khảo sát; không được dùng như đầu ra tích hợp hoặc benchmark. FPS không được cố định hoặc suy ra từ thứ tự frame; mỗi frame giữ timestamp nguồn. Nếu kích thước frame đổi trong cùng clip, script báo lỗi thay vì ngầm resize. Script dùng `num_faces=1` để theo dõi một người và yêu cầu `--single-person-confirmed`; nó không tự phát hiện clip nhiều người. `valid` chỉ là điều kiện model trả điểm môi sau xác nhận thủ công, chưa kiểm tra chất lượng khẩu hình.
 
 Cách chạy và kiểm tra đã thực hiện:
 

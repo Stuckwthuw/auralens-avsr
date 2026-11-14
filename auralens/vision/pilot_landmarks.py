@@ -47,6 +47,8 @@ def main() -> None:
     preview_targets = (1_000, 5_000, 9_000, 11_000)
     preview_done = set()
     previous_ms = -1
+    source_width = None
+    source_height = None
     start = time.perf_counter()
 
     try:
@@ -55,6 +57,11 @@ def main() -> None:
                 ok, frame = capture.read()
                 if not ok:
                     break
+                height, width = frame.shape[:2]
+                if source_width is None:
+                    source_width, source_height = width, height
+                elif (width, height) != (source_width, source_height):
+                    raise RuntimeError(f"vision pilot: frame resolution changed at frame {len(frames)}")
                 raw_ms = capture.get(cv2.CAP_PROP_POS_MSEC)
                 if not math.isfinite(raw_ms) or raw_ms < 0:
                     raise RuntimeError("vision pilot: missing or invalid frame timestamp")
@@ -81,7 +88,6 @@ def main() -> None:
                     if target in preview_done or timestamp_ms < target:
                         continue
                     preview_done.add(target)
-                    height, width = frame.shape[:2]
                     xs = [landmarks[i].x * width for i in lip_indices]
                     ys = [landmarks[i].y * height for i in lip_indices]
                     margin_x = max(12, round((max(xs) - min(xs)) * 0.3))
@@ -111,6 +117,8 @@ def main() -> None:
         "model_sha256": model_hash,
         "mediapipe_version": mp.__version__,
         "opencv_version": cv2.__version__,
+        "source_width_px": source_width,
+        "source_height_px": source_height,
         "lip_indices": lip_indices,
         "frame_count": len(frames),
         "valid_frames": valid_count,

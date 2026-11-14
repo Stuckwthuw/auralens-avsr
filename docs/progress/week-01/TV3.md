@@ -23,6 +23,8 @@ Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PRO
 
 Task: trích điểm môi từ video pilot (ngày 2–3). Trạng thái: VERIFIED trên ba clip cục bộ với điều kiện chỉ một người, chưa bàn giao tích hợp. Script `auralens/vision/pilot_landmarks.py` đọc timestamp gốc, trả cờ/lý do theo frame và tạo ảnh crop có điểm môi. Chưa tạo video phủ điểm hoặc mẫu theo hợp đồng TV4, nên checklist ngày 2–3 vẫn để mở. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md).
 
+Định dạng pilot tạm ghi `source_width_px`, `source_height_px` từ frame thật và từ chối clip đổi kích thước giữa chừng; không ép 640 × 480 hay một FPS cố định. Đã chạy lại clip thứ ba: JSON ghi 1920 × 1080, 68/68 frame có điểm môi, timestamp cuối 2512 ms như lần trước. TV4 chưa xác nhận đây là hợp đồng tích hợp.
+
 ## 3. Kiến thức đã học và áp dụng
 
 Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài thực hành và nơi áp dụng; tham khảo mục học của tuần trong kế hoạch gốc.
