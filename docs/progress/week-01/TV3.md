@@ -3,10 +3,10 @@
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-14, số đo webcam và quan sát khoảng cách do Hoàng Hiếu cung cấp.
+- Cập nhật lần cuối: 2026-11-14, chạy pilot Face Landmarker trên một clip cục bộ.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Mới có số đo webcam và quan sát trực tiếp do người phụ trách báo cáo; các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Đã có số đo webcam, quan sát trực tiếp và kết quả pilot trên một clip. Các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
@@ -21,6 +21,8 @@
 
 Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480, FPS thực đo 27,1 và quan sát vùng miệng dưới đèn phòng ở ba khoảng cách bên dưới. Chưa xác nhận thử cùng TV5 nên chưa đánh dấu hoàn thành checklist ngày 1.
 
+Task: trích điểm môi từ video pilot (ngày 2–3). Trạng thái: VERIFIED cho một clip cục bộ, chưa bàn giao tích hợp. Script `auralens/vision/pilot_landmarks.py` đọc timestamp gốc, trả cờ/lý do theo frame và tạo ảnh crop có điểm môi. Chưa tạo video phủ điểm hoặc mẫu theo hợp đồng TV4, nên checklist ngày 2–3 vẫn để mở. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md).
+
 ## 3. Kiến thức đã học và áp dụng
 
 Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài thực hành và nơi áp dụng; tham khảo mục học của tuần trong kế hoạch gốc.
@@ -29,7 +31,9 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 
 - Webcam trên máy tính của Hoàng Hiếu: 640 × 480; FPS thực đo: 27,1 (số liệu người phụ trách cung cấp trong phiên trao đổi ngày 2026-11-14).
 - Quan sát dưới đèn phòng do Hoàng Hiếu báo cáo: 20–50 cm — miệng rõ, không bị che; 70 cm — thấy miệng nhưng khẩu hình chưa rõ; 100 cm — thấy miệng nhưng không thấy được khẩu hình khi nói. Đây là nhận xét trực quan, chưa phải tỷ lệ frame hợp lệ hoặc kết quả model.
-- Chưa lưu lệnh, log đo, thời lượng đo và cấu hình camera để người khác chạy lại; chưa đo tỷ lệ frame hợp lệ hoặc kiểm tra landmarks.
+- Pilot video riêng: 1920 × 1080, 13,008 giây, 376 frame; MediaPipe Face Landmarker 1.2.3 + OpenCV 5.0.0 trên Python 3.14.6. Đúng một mặt và trích được điểm môi ở 160/376 frame (42,6%); 216 frame trả `no_face`; không có frame `multiple_faces`. `valid` ở đây chỉ có nghĩa phát hiện đúng một mặt, chưa chứng minh khẩu hình đủ rõ để phân loại câu.
+- Timestamp đọc từ video theo mili giây: frame đầu 0 ms, frame cuối 12.960 ms; 10 timestamp đầu khớp `ffprobe`. Hai ảnh crop ở khoảng 1 và 5 giây được xem trực quan, điểm môi bám vùng miệng. Từ khoảng giây 6, nhánh phát hiện không còn trả mặt khi người trong clip lùi xa và đổi hướng. Ảnh và landmarks chỉ lưu cục bộ ngoài Git.
+- Script đã chạy trên clip thật; kiểm tra từ chối `--output` trong repo và `compileall` đạt. Chưa lưu log của phép đo webcam 640 × 480 trước đó; chưa đo tỷ lệ frame hợp lệ trên 20 clip pilot hoặc đánh giá khả năng phân loại câu.
 
 ## 5. Vướng mắc và hỗ trợ cần thiết
 
@@ -37,8 +41,8 @@ Chưa báo cáo; không suy ra là không có vướng mắc. Ghi lỗi, cách t
 
 ## 6. Bàn giao, review và tích hợp
 
-Chưa bàn giao. Ghi người nhận, cách chạy, hợp đồng liên quan, liên kết PR và kết quả xác nhận. Phân biệt READY FOR REVIEW với REVIEWED và INTEGRATED; không tự xác nhận thay reviewer.
+Đã ghi [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md) để TV4 xem cách đọc timestamp và trạng thái invalid. JSON pilot chưa phải hợp đồng chung; chưa có mẫu một câu ổn định để TV4 chạy tích hợp. Chưa có review độc lập hoặc xác nhận tích hợp.
 
 ## 7. Việc tiếp theo và thời gian thực tế
 
-Xác nhận bài thử webcam với TV5, lưu lệnh/log đo để tái lập và dùng khoảng cách 20–50 cm dưới đèn phòng cho clip pilot ban đầu. Sau đó trích landmarks/crop theo kế hoạch. Thời gian đã dùng: chưa báo cáo.
+Xác nhận bài thử webcam với TV5 và lưu log đo 640 × 480 để tái lập. Quay clip mới gồm đúng một câu, giữ mặt hướng camera ở 20–50 cm dưới đèn phòng; chạy lại script, kiểm tra crop và ca không thấy mặt. Phối hợp TV4 về schema trước khi bàn giao mẫu tích hợp. Thời gian đã dùng: chưa báo cáo.
