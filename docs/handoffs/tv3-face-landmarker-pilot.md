@@ -35,3 +35,12 @@ Chạy cùng script, model SHA-256 và môi trường nêu trên với `num_face
 - `WIN_20261114_16_51_25_Pro.mp4`: một người đứng xa camera, bàn tay che miệng xuyên suốt ảnh lấy mẫu. 1920 × 1080, 196 frame, timestamp 0–6768 ms. Kết quả 0/196 frame có landmarks, 196 frame `no_face`.
 
 Ba clip đều bị từ chối ở bước phát hiện mặt. Vì vậy clip che miệng **chưa kiểm tra được** khả năng phân biệt miệng bị che sau khi đã phát hiện mặt; khoảng cách và kích thước mặt cũng có thể ảnh hưởng. `no_face` chỉ có nghĩa Face Landmarker không trả landmarks, không khẳng định khung hình hoàn toàn không có người. Bước tiếp theo của TV3: quay một clip che miệng ở khoảng cách 20–50 cm, cùng vị trí/ánh sáng với clip mặt rõ, rồi so sánh theo frame; chưa hiệu chỉnh thuật toán bằng ba ca khó này và chưa đánh dấu READY FOR REVIEW cho tích hợp.
+
+## Bổ sung cặp đối chứng gần camera ngày 2026-11-14
+
+Chạy lại cùng script/model/môi trường trên hai video 1920 × 1080, một người nhìn gần thẳng vào camera dưới cùng ánh sáng phòng. Ảnh mẫu cho thấy vị trí và kích thước mặt gần tương tự; khoảng cách 20–50 cm là mục tiêu khi quay, **chưa đo trực tiếp** từ video. JSON và ảnh crop nằm ngoài Git tại `%TEMP%\auralens-tv3-pair-16_56_23` và `...-16_56_42`.
+
+- `WIN_20261114_16_56_23_Pro.mp4`, không che miệng: 154/154 frame có landmarks (100%), timestamp 0–5472 ms. Crop khoảng 1 giây cho thấy điểm bám vào môi nhìn thấy được.
+- `WIN_20261114_16_56_42_Pro.mp4`, bàn tay che miệng: 124/147 frame có landmarks (84,4%), 23 frame `no_face`, timestamp 0–5296 ms. Crop tại mốc khoảng 1 và 5 giây cho thấy điểm **được vẽ trên bàn tay che miệng**, không phải môi nhìn thấy được. Các frame `no_face` gồm frame đầu và một số frame trong khoảng 432–1136 ms.
+
+Kết luận: Face Landmarker vẫn có thể trả điểm môi khi miệng bị che, nên `valid=true` trong JSON pilot chỉ là “model trả landmarks”, **không phải** “khẩu hình dùng được”. Chưa có bộ kiểm tra che khuất được xác minh; TV3 không chuyển các frame này thành mẫu V hợp lệ cho bài phân loại 10 câu hoặc benchmark. Cần xây/đánh giá một cờ chất lượng riêng trên tập dev với các ca che, không che, nghiêng và thiếu mặt trước khi đưa vào hợp đồng TV4. Hai clip này không có nhãn câu nói đã xác minh và không phải tập test độc lập.

@@ -3,7 +3,7 @@
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-14, chạy pilot Face Landmarker trên ba clip cục bộ.
+- Cập nhật lần cuối: 2026-11-14, chạy pilot Face Landmarker trên ba clip ban đầu, ba ca khó và một cặp che/không che gần camera.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
 > Đã có số đo webcam, quan sát trực tiếp và kết quả pilot trên một clip. Các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
@@ -39,6 +39,7 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 - Timestamp đọc từ video theo mili giây: hai clip bắt đầu 0 ms, kết thúc lần lượt 12.960 ms và 7.408 ms; 10 timestamp đầu của mỗi clip khớp `ffprobe` sau làm tròn. Ảnh crop ở khoảng 1 và 5 giây được xem trực quan, điểm môi bám vùng miệng. Vùng crop của clip mới rộng khoảng 84–95 px ở hai mốc này; chất lượng cho phân loại câu chưa được kiểm tra. Ảnh và landmarks chỉ lưu cục bộ ngoài Git.
 - Script đã chạy trên ba clip thật; kiểm tra từ chối `--output` trong repo và yêu cầu xác nhận một người; `compileall` đạt. Chưa lưu log của phép đo webcam 640 × 480 trước đó; chưa đo tỷ lệ frame hợp lệ trên 20 clip pilot hoặc đánh giá khả năng phân loại câu.
 - Ba ca khó bổ sung ngày 2026-11-14, cùng MediaPipe Face Landmarker `num_faces=1`: quay nghiêng/cúi mặt 0/162 frame có landmarks; khung hình phần lớn trống, người đôi lúc ở sát mép 0/175; che miệng bằng tay khi đứng xa 0/196. Tất cả frame còn lại trả `no_face`; số này là kết quả phát hiện landmarks, không phải kết luận về khả năng đọc khẩu hình. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md) để biết clip, timestamp và giới hạn. Video/ảnh/JSON chỉ lưu ngoài Git. Ca che miệng chưa kiểm tra được occlusion khi mặt được phát hiện.
+- Cặp đối chứng gần camera ngày 2026-11-14: không che miệng 154/154 frame có landmarks; che miệng bằng tay 124/147 frame có landmarks, 23 frame `no_face`. Crop của clip che tại khoảng 1 và 5 giây cho thấy điểm môi nằm trên bàn tay, nên `valid=true` hiện chỉ có nghĩa model trả landmarks, không bảo đảm khẩu hình nhìn thấy hay dùng được. Hai clip quay dưới cùng ánh sáng và vị trí gần tương tự theo ảnh mẫu; chưa đo khoảng cách thực tế, chưa có nhãn câu nói được xác minh và chưa có phép đánh giá phân loại. JSON/ảnh chỉ lưu ngoài Git. Chi tiết ở [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md).
 
 ## 5. Vướng mắc và hỗ trợ cần thiết
 
@@ -52,4 +53,4 @@ Chưa báo cáo; không suy ra là không có vướng mắc. Ghi lỗi, cách t
 
 Xác nhận bài thử webcam với TV5 và lưu log đo 640 × 480 để tái lập. Xác nhận nội dung và nhãn của clip thứ ba, kiểm tra đủ chi tiết miệng cho bài 10 câu; thử thêm ca không thấy mặt/nhiều mặt trong phạm vi pilot. Phối hợp TV4 về schema trước khi bàn giao mẫu tích hợp. Thời gian đã dùng: chưa báo cáo.
 
-Sau ba ca khó đã thử, cần quay lại ca che miệng ở 20–50 cm với mặt hướng camera và một clip đối chứng không che ở cùng vị trí/ánh sáng. Ca nhiều người vẫn chưa kiểm tra; không suy từ ba clip trên. PR pilot tiếp tục chờ review/tích hợp theo quy trình nhóm.
+Đã thử cặp che/không che ở vị trí gần tương tự. Bước tiếp theo là xác định tiêu chí chất lượng riêng cho miệng bị che và kiểm tra trên tập dev; chưa được coi landmarks trên bàn tay là đầu vào V hợp lệ. Ca nhiều người vẫn chưa kiểm tra. PR pilot tiếp tục chờ review/tích hợp theo quy trình nhóm.
