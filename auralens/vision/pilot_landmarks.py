@@ -17,6 +17,8 @@ def main() -> None:
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--sample-id", required=True)
+    parser.add_argument("--single-person-confirmed", action="store_true",
+                        help="confirm that the entire clip shows only one person")
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[2]
     if args.output.resolve().is_relative_to(repo_root):
@@ -27,6 +29,8 @@ def main() -> None:
         parser.error("--model does not exist")
     if not args.sample_id.strip():
         parser.error("--sample-id must not be blank")
+    if not args.single_person_confirmed:
+        parser.error("confirm the clip has only one person with --single-person-confirmed")
     args.output.mkdir(parents=True, exist_ok=True)
 
     capture = cv2.VideoCapture(str(args.video))
@@ -36,7 +40,7 @@ def main() -> None:
     options = mp.tasks.vision.FaceLandmarkerOptions(
         base_options=mp.tasks.BaseOptions(model_asset_path=str(args.model)),
         running_mode=mp.tasks.vision.RunningMode.VIDEO,
-        num_faces=2,
+        num_faces=1,
     )
     lip_indices = sorted({index for pair in mp.tasks.vision.FaceLandmarksConnections.FACE_LANDMARKS_LIPS for index in (pair.start, pair.end)})
     frames = []
@@ -62,10 +66,9 @@ def main() -> None:
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
                 result = landmarker.detect_for_video(image, timestamp_ms)
-                face_count = len(result.face_landmarks)
-                if face_count != 1:
+                if not result.face_landmarks:
                     frames.append({"timestamp_ms": timestamp_ms, "valid": False,
-                                   "reason": "no_face" if face_count == 0 else "multiple_faces",
+                                   "reason": "no_face",
                                    "lip_landmarks": None})
                     continue
 
@@ -104,6 +107,7 @@ def main() -> None:
     result = {
         "sample_id": args.sample_id,
         "pilot_only": True,
+        "single_person_confirmed": True,
         "model_sha256": model_hash,
         "mediapipe_version": mp.__version__,
         "opencv_version": cv2.__version__,
