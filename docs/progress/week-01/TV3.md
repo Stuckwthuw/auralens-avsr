@@ -1,12 +1,12 @@
 # TV3 — Hoàng Hiếu — Tuần 01: Đọc camera và trích vùng miệng
 
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
-- Trạng thái: CHƯA BÁO CÁO.
+- Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: chưa có báo cáo thực hiện.
+- Cập nhật lần cuối: 2026-11-14, số đo webcam do Hoàng Hiếu cung cấp.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Đây là mẫu theo kế hoạch, chưa xác nhận bất kỳ nhiệm vụ chuyên môn nào đã hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Mới có số đo webcam do người phụ trách báo cáo; các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
@@ -19,7 +19,7 @@
 
 ## 2. Công việc thực tế và trạng thái
 
-Chưa có báo cáo. Khi làm, ghi từng task: ID/tên, trạng thái, đầu ra, commit/PR và người nhận. Task hoàn tất trong tuần nào phải dẫn đúng bằng chứng của tuần đó; không sao chép trạng thái sang các tuần sau.
+Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480 và FPS thực đo 27,1. Chưa ghi nhận điều kiện ánh sáng, khoảng cách và độ rõ vùng miệng nên chưa đánh dấu hoàn thành checklist ngày 1.
 
 ## 3. Kiến thức đã học và áp dụng
 
@@ -27,7 +27,8 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 
 ## 4. Kiểm tra và số liệu
 
-Chưa đo/chưa chạy kiểm tra. Khi có, ghi lệnh thực tế, môi trường, dữ liệu/số mẫu, model/config, kết quả và phần chưa kiểm tra. Phân biệt dữ liệu thật, mock và video ghi trước; không đưa bản thu cá nhân hoặc bí mật vào Git.
+- Webcam trên máy tính của Hoàng Hiếu: 640 × 480; FPS thực đo: 27,1 (số liệu người phụ trách cung cấp trong phiên trao đổi ngày 2026-11-14).
+- Chưa lưu lệnh, log đo, thời lượng đo và cấu hình camera để người khác chạy lại; chưa đo tỷ lệ frame hợp lệ hoặc kiểm tra landmarks.
 
 ## 5. Vướng mắc và hỗ trợ cần thiết
 
@@ -39,4 +40,4 @@ Chưa bàn giao. Ghi người nhận, cách chạy, hợp đồng liên quan, li
 
 ## 7. Việc tiếp theo và thời gian thực tế
 
-Chưa báo cáo. Ghi phần còn thiếu, mục tiêu phiên sau, thời gian đã dùng và điều chỉnh được thống nhất nếu có. Báo cáo cuối tuần có thể vẫn còn task dở; phải ghi rõ thay vì đánh dấu toàn bộ đã hoàn thành.
+Ghi điều kiện ánh sáng, khoảng cách và đánh giá độ rõ vùng miệng ở 640 × 480; lưu lệnh/log đo để tái lập. Sau đó thử clip pilot và trích landmarks/crop theo kế hoạch. Thời gian đã dùng: chưa báo cáo.
