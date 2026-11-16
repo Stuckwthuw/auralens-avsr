@@ -15,7 +15,7 @@
 - [ ] Đối chiếu thiết bị thu và phối hợp kiểm tra cùng TV5; chưa có xác nhận trong ghi chú hiện tại.
 - [x] Ngày 2: thu WAV, nghe lại và kiểm tra kênh, tần số lấy mẫu, thời lượng, clipping.
 - [x] Ngày 3–4: chạy ASR trên ít nhất 10 đoạn tiếng Việt pilot, chế độ chép lời.
-- [x] Viết và chạy hàm ASR trả text + thời gian xử lý; giữ model đã nạp giữa các lần suy luận.
+- [x] Viết và chạy hàm ASR `asr_free`; model được giữ để dùng lại giữa các lượt suy luận. Kết quả trong repo hiện bổ sung các trường theo hợp đồng; bản cập nhật này chưa được chạy lại trên WAV.
 - [x] Tạo script/hình waveform, spectrogram, MFCC cho hai bản ghi; ghi shape và đơn vị trục.
 - [x] Hỗ trợ pilot hội thoại hai người bằng WAV/TXT riêng.
 - [x] TV2 đã chuẩn bị/gửi API để TV4 xác nhận phần của mình.
@@ -38,14 +38,14 @@
 - Có 10 WAV pilot duy nhất và 10 TXT Buzz ghép theo tên gốc từ `Untitled.wav` đến `Untitled10.wav` (bỏ số 1 theo cách Sound Recorder đặt tên). Buzz được Dương báo cáo chạy Whisper.cpp Medium, Vietnamese, Transcribe.
 - Định dạng 10 WAV: PCM 16-bit, mono; 9 file 16 kHz, `Untitled9.wav` 48 kHz; thời lượng 3.520–7.680 giây.
 - Đo `volumedetect` trên 10 file: peak −10.3 đến −16.7 dBFS; không thấy clipping số. Mean −29.8 đến −34.9 dBFS. Đo này không thay thế việc nghe đánh giá ồn nền/méo analog.
-- Mã ASR đã đưa vào repo: [`asr_pilot.py`](../../../auralens/audio/asr_pilot.py). Hàm `FasterWhisperASR.transcribe_file(audio_path)` trả `text` và `infer_ms`; model được nạp khi tạo đối tượng và tái sử dụng cho nhiều file.
+- Mã ASR đã đưa vào repo: [`asr_pilot.py`](../../../auralens/audio/asr_pilot.py). `FasterWhisperASR.transcribe_file(audio_path, sample_id=...)` trả `sample_id`, `mode=asr_free`, `text`, `status`, `reason`, `model_version` và `infer_ms`; model được nạp khi tạo đối tượng và tái sử dụng cho nhiều file. Đây là chép lời tự do, không phải phân loại 10 câu `audio_10`.
 - Đã chạy hai WAV trong cùng tiến trình: thời gian model sẵn sàng 5,138 ms; `Untitled9.wav` nhận dạng 6,963 ms; `Untitled4.wav` nhận dạng 7,559 ms. Đây là hai lượt chạy file cục bộ, không phải độ trễ streaming.
 - Pilot có hội thoại hai người `tini.wav` và TXT Buzz tương ứng: PCM 16-bit, mono, 16 kHz, 38.933 giây. Theo đánh giá của Dương, phần lớn nội dung được nhận dạng ổn; các lỗi được chia sẻ gồm tên riêng bị rút gọn, một cụm danh từ bị chèn từ, và một tựa game bị sai dấu. Đây là hội thoại tự nhiên riêng, không gộp vào 10 câu pilot đọc; transcript đầy đủ không được chia sẻ trong repo.
 - Log nhóm truy cập được, gồm 10 kết quả Buzz đã bỏ đường dẫn cá nhân, cùng timing Faster-Whisper: [bàn giao ASR pilot](../../handoffs/tv2-week01-asr-pilot.md). WAV và transcript hội thoại tự nhiên vẫn nằm ngoài Git.
 
 ### Biểu đồ âm thanh
 
-- Script tái tạo đã đưa vào repo: [`plot_pilot.py`](../../../auralens/audio/plot_pilot.py); hướng dẫn cài và chạy ở [bàn giao ASR pilot](../../handoffs/tv2-week01-asr-pilot.md).
+- Script tái tạo đã đưa vào repo: [`plot_pilot.py`](../../../auralens/audio/plot_pilot.py); mặc định lưu ảnh vào thư mục hiện hành, có thể chọn thư mục ghi được riêng. Hướng dẫn cài và chạy ở [bàn giao ASR pilot](../../handoffs/tv2-week01-asr-pilot.md).
 - Hình đầu ra trong `docs/progress/week-01/assets/tv2/`: `Untitled_waveform_spectrogram_mfcc.png` và `Untitled10_waveform_spectrogram_mfcc.png`.
 - Waveform: trục thời gian (giây) và biên độ chuẩn hóa. Spectrogram: thời gian (giây), tần số (Hz; 0–8,000 Hz với tín hiệu 16 kHz). MFCC: chỉ số hệ số và thời gian; hai shape là `(13, 508)` và `(13, 481)` (hệ số, khung thời gian).
 - Cấu hình hiển thị MFCC: 13 hệ số, khung 32 ms (`n_fft=512` ở 16 kHz), bước 10 ms (`hop_length=160`). Hai WAV gốc không được thêm vào repository; hai hình đặc trưng dẫn xuất được lưu cạnh báo cáo để hiển thị trực tiếp.
@@ -61,8 +61,8 @@
 ### API và bàn giao
 
 - TV2 đã chuẩn bị/gửi phần API ASR để TV4 xác nhận; phía TV4 chưa có xác nhận được ghi nhận trong báo cáo này.
-- API local hiện nhận đường dẫn file và trả `{"text": ..., "infer_ms": ...}`. Chưa có bằng chứng hàm đã được TV4 gọi trong pipeline tích hợp.
-- Trạng thái API: IMPLEMENTED — mã, cấu hình, hướng dẫn chạy và log đã được đưa vào repo. Bản sao trong repo chưa được TV4 chạy/kiểm tra độc lập; chưa tích hợp.
+- API local nhận đường dẫn file cùng `sample_id` do bên gọi cung cấp và trả các trường theo đầu ra UI của hợp đồng (`sample_id`, `mode`, `text`, `status`, `reason`, `model_version`, `infer_ms`). Chưa có bằng chứng hàm đã được TV4 gọi trong pipeline tích hợp.
+- Trạng thái API: IMPLEMENTED — mã, cấu hình, hướng dẫn chạy và log đã được đưa vào repo. Bản sao trong repo chưa được TV4 chạy/kiểm tra độc lập; chưa tích hợp. TV4 cần xác nhận adapter dùng cùng schema và quy ước `sample_id`.
 
 ## 3. Kiến thức đã học và áp dụng
 
@@ -83,6 +83,7 @@
 ## 5. Vướng mắc và hỗ trợ cần thiết
 
 - Cần TV4 xác nhận API và thử gọi hàm trong pipeline; không coi API là INTEGRATED trước khi có bằng chứng.
+- Trước tích hợp, TV4 cần xác nhận quy ước `sample_id`/schema tiêu thụ; API này thuộc scope `asr_free`, không thay thế `audio_10`.
 - Cần xác nhận ngày bắt đầu dự án để ghi đúng thời gian tuần.
 - Cần bổ sung phiên bản Windows và xác nhận đã phối hợp thiết bị với TV5 nếu có.
 - Cần nghe lại/xác nhận câu gốc cho các pilot chưa có nhãn tham chiếu trước khi tính CER.

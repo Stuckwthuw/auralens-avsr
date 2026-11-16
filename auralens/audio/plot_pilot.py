@@ -14,7 +14,14 @@ HOP_LENGTH = 160
 N_MFCC = 13
 
 
-def plot_file(audio_path: str | Path) -> tuple[Path, tuple[int, int]]:
+def plot_file(
+    audio_path: str | Path, output_dir: str | Path | None = None
+) -> tuple[Path, tuple[int, int]]:
+    """Plot one WAV; default output is the current directory, not the WAV folder.
+
+    Pass ``output_dir`` to choose another writable destination. This avoids
+    failing merely because the source audio directory is read-only.
+    """
     path = Path(audio_path).expanduser()
     if not path.is_file():
         raise FileNotFoundError(f"Audio file not found: {path}")
@@ -61,7 +68,9 @@ def plot_file(audio_path: str | Path) -> tuple[Path, tuple[int, int]]:
     )
 
     plt.tight_layout()
-    output_path = path.with_name(f"{path.stem}_waveform_spectrogram_mfcc.png")
+    destination = Path(output_dir).expanduser() if output_dir else Path.cwd()
+    destination.mkdir(parents=True, exist_ok=True)
+    output_path = destination / f"{path.stem}_waveform_spectrogram_mfcc.png"
     plt.savefig(output_path, dpi=150)
     print(f"Saved plot: {output_path}")
     print(f"Analysis sample rate: {sample_rate} Hz")
@@ -73,7 +82,8 @@ def plot_file(audio_path: str | Path) -> tuple[Path, tuple[int, int]]:
 def main() -> None:
     audio_path = input("Enter WAV path: ").strip().strip('"')
     if audio_path:
-        plot_file(audio_path)
+        output_dir = input("Output folder (Enter for current folder): ").strip().strip('"')
+        plot_file(audio_path, output_dir or None)
 
 
 if __name__ == "__main__":

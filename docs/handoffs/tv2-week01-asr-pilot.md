@@ -2,12 +2,12 @@
 
 ## Scope
 
-This is a local-file Vietnamese ASR pilot, not the integrated TV4 pipeline and not the 10-class audio classifier. WAV files, Buzz TXT files, and the conversational recording stay outside Git. Use an approved group data store if another member needs to inspect audio.
+This is a local-file Vietnamese `asr_free` pilot: it transcribes free-form speech. It is not the integrated TV4 pipeline and not the 10-class `audio_10` classifier for the fixed phrase task. WAV files, Buzz TXT files, and the conversational recording stay outside Git. Use an approved group data store if another member needs to inspect audio.
 
 ## Repository files
 
-- `auralens/audio/asr_pilot.py`: Faster-Whisper wrapper. Construct `FasterWhisperASR` once and call `transcribe_file(path)` for each file; the model is reused within that object.
-- `auralens/audio/plot_pilot.py`: creates waveform, spectrogram, and MFCC plots for a WAV selected at runtime.
+- `auralens/audio/asr_pilot.py`: Faster-Whisper `asr_free` wrapper. Construct `FasterWhisperASR` once and call `transcribe_file(path, sample_id="sample_01")` for each file; the model is reused within that object. It returns `sample_id`, `mode`, `text`, `status`, `reason`, `model_version`, and `infer_ms`. The caller supplies the sample ID; local filenames are not used as IDs.
+- `auralens/audio/plot_pilot.py`: creates waveform, spectrogram, and MFCC plots for a WAV selected at runtime. By default, it saves to the current working directory; an optional output folder can be supplied to avoid writing beside a read-only WAV.
 - `auralens/audio/requirements-pilot.txt`: pinned environment snapshot captured from Dương's local pilot environment.
 
 ## Environment and configuration
@@ -27,16 +27,24 @@ py -3.14 -m venv .venv
 python -m pip install -r auralens\audio\requirements-pilot.txt
 ```
 
-Run ASR; enter one WAV path at each prompt. The first model load may need internet access to download Whisper Medium. The audio path can point to a file outside the repository.
+Run free-form ASR (`asr_free`), not the fixed ten-class audio classifier. Enter a sample ID and one WAV path at each prompt. The first model load may need internet access to download Whisper Medium. The audio path can point to a file outside the repository.
 
 ```cmd
 python -m auralens.audio.asr_pilot
 ```
 
-Run the three-plot script; enter a WAV path when prompted. The PNG is saved beside that WAV.
+Run the three-plot script; enter a WAV path when prompted, then optionally enter an output folder. Press Enter at the output-folder prompt to save in the current working directory (the repository root when run as shown).
 
 ```cmd
 python -m auralens.audio.plot_pilot
+```
+
+The plotting function can also receive a writable destination:
+
+```python
+from auralens.audio.plot_pilot import plot_file
+
+plot_file(r"C:\path\to\source.wav", output_dir=r"C:\path\to\writable\plots")
 ```
 
 ## Sanitized pilot log
@@ -75,4 +83,4 @@ ChatGPT helped explain audio/ASR concepts, draft the pilot scripts and run instr
 
 ## Verification status and next handoff
 
-The original local scripts were run by Dương. The repository copy and clean-environment install have not yet been independently rerun or reviewed by TV4. Treat this as an implemented pilot handoff pending another member's verification, not as an integrated API.
+The original local scripts were run by Dương. The repository copy and clean-environment install have not yet been independently rerun or reviewed by TV4. The ASR response now carries `sample_id` and `model_version`; TV4 still needs to confirm its consuming contract and exercise the call in the pipeline. Treat this as an implemented `asr_free` pilot pending verification, not as an integrated API or `audio_10` classifier.
