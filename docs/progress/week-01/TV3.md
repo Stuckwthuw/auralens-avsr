@@ -3,10 +3,10 @@
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-14, chạy pilot Face Landmarker trên ba clip ban đầu, ba ca khó và một cặp che/không che gần camera.
+- Cập nhật lần cuối: 2026-11-16, kiểm tra thêm clip pilot 194716.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Đã có số đo webcam, quan sát trực tiếp và kết quả pilot trên một clip. Các nhiệm vụ còn lại chưa được xác nhận hoàn thành. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Đã có số đo webcam, quan sát trực tiếp và kết quả khảo sát trên 9 clip riêng biệt. Chưa đồng nghĩa đạt bộ 20 clip có nhãn từ 2 người của TV1. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
@@ -18,6 +18,8 @@
 - [ ] Kiểm tra 20 clip pilot; hỗ trợ tuyển 2 người và thu theo lịch chung.
 
 ## 2. Công việc thực tế và trạng thái
+
+Task: TV3-PILOT-194716 / Hoàng Hiếu — Kiểm tra clip pilot / nhánh `docs/tv3-hoang-hieu-pilot-194716`, base `2331e8b`. Trạng thái VERIFIED cho trích landmarks trên clip mới: 145/145 frame có điểm môi, 0 `no_face`, timestamp 0–4832 ms; tất cả timestamp khớp `ffprobe` và tọa độ hữu hạn. Đã xem toàn bộ frame thu nhỏ và 9 crop có điểm môi. Người dùng cung cấp nội dung câu, chưa xác minh audio độc lập hoặc gán lớp. Đầu ra, lệnh, môi trường, giới hạn và người nhận ở [bàn giao clip 194716](../../handoffs/tv3-pilot-194716.md). Tài liệu READY FOR REVIEW; chưa tích hợp TV4, chưa có kết quả phân loại. Chưa thống kê thời gian làm task.
 
 Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480, FPS thực đo 27,1 và quan sát vùng miệng dưới đèn phòng ở ba khoảng cách bên dưới. Chưa xác nhận thử cùng TV5 nên chưa đánh dấu hoàn thành checklist ngày 1.
 
