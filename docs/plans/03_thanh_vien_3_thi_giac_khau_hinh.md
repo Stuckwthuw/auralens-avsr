@@ -1,6 +1,7 @@
-# Thành viên 3 — Thị giác máy tính và khẩu hình
+# TV3 — Hoàng Hiếu — Thị giác máy tính và khẩu hình
 
-Người phụ trách: ................................  
+Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình
+
 Thời gian: 4 tuần, khoảng 12 giờ/tuần: 2 giờ học, 7 giờ làm, 2 giờ kiểm tra/báo cáo và 1 giờ họp.
 
 ## 1. Vai trò và phạm vi của bạn
