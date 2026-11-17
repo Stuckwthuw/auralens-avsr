@@ -3,15 +3,15 @@
 - Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-16, bổ sung hướng dẫn quay và checklist kiểm tra pilot; chưa thu thêm clip trong task tài liệu này.
+- Cập nhật lần cuối: 2026-11-16, kiểm tra clip pilot 194716 và tạo video phủ điểm môi.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Đã có số đo webcam, quan sát trực tiếp và kết quả khảo sát trên 8 clip riêng biệt. Các clip này chưa mặc nhiên đáp ứng bộ 20 đoạn có nhãn từ 2 người theo kế hoạch TV1. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Đã có số đo webcam, quan sát trực tiếp và kết quả khảo sát trên 9 clip riêng biệt. Chưa đồng nghĩa đạt bộ 20 clip có nhãn từ 2 người của TV1. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
 - [ ] Ngày 1: cùng TV5 thử webcam; xác định độ phân giải/fps thực đo, ánh sáng và khoảng cách để miệng đủ rõ. Có thể bắt đầu bằng 720p, mục tiêu khoảng 25–30 fps nếu máy đáp ứng; đây là cấu hình đề xuất, không phải yêu cầu cố định.
-- [ ] Ngày 2–3: chạy Face Landmarker; vẽ điểm miệng trên video pilot và crop vùng miệng có lề.
+- [x] Ngày 2–3: chạy Face Landmarker, tạo video phủ điểm và crop có lề trên clip pilot 194716. Đã kiểm tra file đầu ra; chưa có xác nhận người nhận. Xem [bàn giao clip](../../handoffs/tv3-pilot-194716.md).
 - [ ] Ngày 4: cung cấp cho TV4 một sample gồm chuỗi landmarks/crop, timestamp và cờ valid.
 - [ ] Ghi hành vi khi không có mặt, nhiều mặt, quay nghiêng hoặc miệng bị che. Trước mắt chỉ xử lý một người, không tự chọn ngẫu nhiên giữa nhiều người.
 - [x] Viết hướng dẫn quay ngắn cho TV1: [hướng dẫn và checklist pilot](../../guides/tv3-pilot-recording.md). Đã soạn, chờ review và thử áp dụng; chưa xác nhận TV1 tiếp nhận.
@@ -21,9 +21,11 @@
 
 Task: TV3-PILOT-GUIDE / Hoàng Hiếu — Hướng dẫn quay pilot tuần 1. Trạng thái: READY FOR REVIEW (tài liệu). Nhánh: `docs/tv3-hoang-hieu-pilot-guide`, base `2331e8b`. Đầu ra: [hướng dẫn quay và checklist từng clip](../../guides/tv3-pilot-recording.md), cùng cập nhật báo cáo và tên task trong kế hoạch cá nhân. Nội dung dựa trên kết quả pilot hiện có, tách điều kiện đề xuất khỏi số đo thật; không thay schema pilot hoặc hợp đồng TV4. Kiểm tra tài liệu: đối chiếu kế hoạch TV1/TV3 và bàn giao pilot, kiểm tra liên kết tương đối đạt; `git -c core.whitespace=cr-at-eol diff --check` đạt (giữ CRLF hiện có). Chưa chạy buổi thu theo hướng dẫn mới, chưa có review độc lập. Người nhận dự kiến: TV1 xem quy trình/nhãn, TV5 xem thao tác và cấu hình thu. Tiếp theo: xác nhận câu và 2 người pilot với TV1, thử quy trình trên một clip trước khi thu cả bộ 20 đoạn. Thời gian thực tế chưa thống kê.
 
+Task: TV3-PILOT-194716 / Hoàng Hiếu — Kiểm tra clip pilot / nhánh `docs/tv3-hoang-hieu-pilot-194716`, base `2331e8b`. Trạng thái VERIFIED cho trích landmarks trên clip mới: 145/145 frame có điểm môi, 0 `no_face`, timestamp 0–4832 ms; tất cả timestamp khớp `ffprobe` và tọa độ hữu hạn. Đã xem toàn bộ frame thu nhỏ và 9 crop có điểm môi. Người dùng cung cấp nội dung câu, chưa xác minh audio độc lập hoặc gán lớp. Đầu ra, lệnh, môi trường, giới hạn và người nhận ở [bàn giao clip 194716](../../handoffs/tv3-pilot-194716.md). Tài liệu READY FOR REVIEW; chưa tích hợp TV4, chưa có kết quả phân loại. Chưa thống kê thời gian làm task.
+
 Task: thử webcam tích hợp trên máy tính (ngày 1). Trạng thái: IN PROGRESS. Hoàng Hiếu báo cáo độ phân giải thực 640 × 480, FPS thực đo 27,1 và quan sát vùng miệng dưới đèn phòng ở ba khoảng cách bên dưới. Chưa xác nhận thử cùng TV5 nên chưa đánh dấu hoàn thành checklist ngày 1.
 
-Task: trích điểm môi từ video pilot (ngày 2–3). Trạng thái: VERIFIED trên ba clip cục bộ với điều kiện chỉ một người, chưa bàn giao tích hợp. Script `auralens/vision/pilot_landmarks.py` đọc timestamp gốc, trả cờ/lý do theo frame và tạo ảnh crop có điểm môi. Chưa tạo video phủ điểm hoặc mẫu theo hợp đồng TV4, nên checklist ngày 2–3 vẫn để mở. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md).
+Task: trích điểm môi từ video pilot (ngày 2–3). Trạng thái: VERIFIED trên ba clip ban đầu với điều kiện chỉ một người, chưa bàn giao tích hợp. Script `auralens/vision/pilot_landmarks.py` đọc timestamp gốc, trả cờ/lý do theo frame và tạo ảnh crop có điểm môi. Bổ sung ngày 2026-11-16: đã tạo video phủ điểm cho clip 194716 bằng công cụ cục bộ riêng; kiểm tra 145 PTS hình chính xác, thời lượng/độ phân giải giữ nguyên, 218 gói audio giữ nội dung và thời điểm phát. Đã xem 9 crop từ video xuất. Chưa có mẫu theo hợp đồng TV4 hoặc chức năng xuất video dùng chung trong script pilot. Xem [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md) và [video clip 194716](../../handoffs/tv3-pilot-194716.md).
 
 Định dạng pilot tạm ghi `source_width_px`, `source_height_px` từ frame thật và từ chối clip đổi kích thước giữa chừng; không ép 640 × 480 hay một FPS cố định. Đã chạy lại clip thứ ba: JSON ghi 1920 × 1080, 68/68 frame có điểm môi, timestamp cuối 2512 ms như lần trước. TV4 chưa xác nhận đây là hợp đồng tích hợp.
 
