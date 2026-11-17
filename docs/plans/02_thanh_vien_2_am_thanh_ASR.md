@@ -1,6 +1,6 @@
-# Thành viên 2 — Âm thanh và nhận dạng lời nói
+# TV2 — Dương — Âm thanh và nhận dạng lời nói
 
-Người phụ trách: ................................  
+Người phụ trách: Dương  
 Thời gian: 4 tuần từ ngày bắt đầu; 12 giờ/tuần, gồm khoảng 2 giờ học, 7 giờ làm, 2 giờ kiểm tra/báo cáo và 1 giờ họp.
 
 ## 1. Bạn chịu trách nhiệm gì?
