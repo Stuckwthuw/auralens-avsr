@@ -36,6 +36,8 @@ class Recorder:
         camera_index: int = 0,
         audio_device: Optional[Union[int, str]] = None,
         sample_rate: int = 16000,
+        max_duration_s: Optional[float] = 15.0,
+        max_frames: Optional[int] = 450,
     ) -> None:
         """Initialize recorder configuration without opening hardware devices.
 
@@ -43,10 +45,24 @@ class Recorder:
             camera_index: Camera device index for OpenCV VideoCapture (default 0).
             audio_device: Sounddevice input device index or name (default None for system default).
             sample_rate: Audio sampling rate in Hz (default 16000).
+            max_duration_s: Wall-clock cap for one turn in seconds, so a forgotten
+                Stop does not exhaust RAM (None disables the cap). Frames are
+                ~0.9 MB each at 640×480, so 15 s at 30 fps is ~420 MB worst case.
+            max_frames: Secondary cap on buffered frames (None disables it).
+
+        Raises:
+            ValueError: If a cap is zero or negative.
         """
+        if max_duration_s is not None and max_duration_s <= 0:
+            raise ValueError(f"max_duration_s phải > 0, nhận được: {max_duration_s!r}")
+        if max_frames is not None and max_frames <= 0:
+            raise ValueError(f"max_frames phải > 0, nhận được: {max_frames!r}")
+
         self.camera_index = camera_index
         self.audio_device = audio_device
         self.sample_rate = sample_rate
+        self.max_duration_s = max_duration_s
+        self.max_frames = max_frames
 
         self._camera: Optional[cv2.VideoCapture] = None
         self._audio_stream: Optional[sd.InputStream] = None
@@ -56,6 +72,9 @@ class Recorder:
 
         self._recording_start_time: float = 0.0
         self._sample_id: Optional[str] = None
+        self._limit_reached: bool = False
+        self._limit_reason: Optional[str] = None
+        self._frame_count: int = 0
 
         self._audio_chunks: List[np.ndarray] = []
         self._video_frames: List[Tuple[int, np.ndarray]] = []
@@ -84,6 +103,11 @@ class Recorder:
     def is_recording(self) -> bool:
         """Whether a recording session is currently active."""
         return self._is_recording
+
+    @property
+    def limit_reached(self) -> bool:
+        """Whether capture stopped buffering because a limit was reached."""
+        return self._limit_reached
 
     @property
     def device_info(self) -> Dict[str, Any]:
@@ -169,7 +193,15 @@ class Recorder:
         status: sd.CallbackFlags,
     ) -> None:
         """Callback invoked by sounddevice on the audio thread for incoming audio blocks."""
-        if not self._is_recording:
+        if not self._is_recording or self._limit_reached:
+            return
+
+        # Duration guard: stop buffering instead of growing RAM without bound.
+        if (
+            self.max_duration_s is not None
+            and time.perf_counter() - self._recording_start_time >= self.max_duration_s
+        ):
+            self._trip_limit("duration")
             return
 
         # Flatten input to 1D mono float32 chunk and copy to detach from driver buffer
@@ -178,10 +210,32 @@ class Recorder:
             if self._is_recording:
                 self._audio_chunks.append(chunk)
 
+    def _trip_limit(self, reason: str) -> None:
+        """Stop buffering new data once a capture limit is reached.
+
+        The session stays open so ``stop_recording()`` still returns what was
+        captured; the limit is reported in the result and in the UI.
+        """
+        if self._limit_reached:
+            return
+        self._limit_reached = True
+        self._limit_reason = reason
+        logger.warning(
+            "Capture reached the %s limit for sample %s", reason, self._sample_id
+        )
+
     def _video_capture_loop(self) -> None:
         """Loop executed in video thread to capture frames while recording."""
-        while self._is_recording and self._is_open:
+        while self._is_recording and self._is_open and not self._limit_reached:
             if self._camera is None:
+                break
+
+            if (
+                self.max_duration_s is not None
+                and time.perf_counter() - self._recording_start_time
+                >= self.max_duration_s
+            ):
+                self._trip_limit("duration")
                 break
 
             ret, frame = self._camera.read()
@@ -203,8 +257,14 @@ class Recorder:
                 self._device_info["camera_width"] = w
                 self._device_info["camera_height"] = h
 
+            frame_cap_hit = False
             with self._video_lock:
                 self._video_frames.append((timestamp_ms, frame))
+                self._frame_count += 1
+                if self.max_frames is not None and self._frame_count >= self.max_frames:
+                    frame_cap_hit = True
+            if frame_cap_hit:
+                self._trip_limit("frames")
 
     def start_recording(self, sample_id: str) -> None:
         """Start buffering audio and video frames into lists.
@@ -245,6 +305,9 @@ class Recorder:
             self._sample_id = sample_id.strip()
             self._recording_start_time = time.perf_counter()
             self._is_recording = True
+            self._limit_reached = False
+            self._limit_reason = None
+            self._frame_count = 0
 
             # Start video capture loop in a separate thread
             self._video_thread = threading.Thread(
@@ -315,6 +378,10 @@ class Recorder:
                 "sample_rate": self.sample_rate,
                 "duration_ms": duration_ms,
                 "device_info": dict(self._device_info),
+                "limit_reached": self._limit_reached,
+                "limit_reason": self._limit_reason,
+                "max_duration_s": self.max_duration_s,
+                "max_frames": self.max_frames,
             }
 
     def close(self) -> None:

@@ -29,6 +29,7 @@ import time
 import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import ttk
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
@@ -169,6 +170,8 @@ class AuralensApp:
         audio_device: Optional[Union[int, str]] = None,
         sample_rate: int = 16000,
         recorder_factory: Optional[Callable[..., Any]] = None,
+        output_dir: Union[str, Path] = "recordings",
+        max_duration_s: float = 15.0,
     ) -> None:
         """Initialize the Auralens application.
 
@@ -180,6 +183,9 @@ class AuralensApp:
             sample_rate: Audio sample rate in Hz (16 kHz per project contract).
             recorder_factory: Test seam; builds a Recorder-like object. Defaults
                 to the real Recorder, imported only when live mode runs.
+            output_dir: Root directory where live turns are saved as pilot data
+                (``<output_dir>/<sample_id>/``); ``recordings/`` is gitignored.
+            max_duration_s: Cap for one capture turn in seconds.
         """
         # Own or create Tk root
         if root is None:
@@ -196,6 +202,8 @@ class AuralensApp:
         self.sample_rate: int = sample_rate
         self._recorder_factory = recorder_factory or _tao_recorder
         self._recorder: Any = None
+        self.output_dir = str(output_dir)
+        self.max_duration_s = float(max_duration_s)
         self.dark_mode: bool = True  # High contrast dark mode by default
         self.font_size: int = 28  # Default subtitle font size (24pt+)
         self.is_running: bool = False
@@ -969,6 +977,7 @@ class AuralensApp:
                 camera_index=self.camera_index,
                 audio_device=self.audio_device,
                 sample_rate=self.sample_rate,
+                max_duration_s=self.max_duration_s,
             )
             self._recorder = recorder
             recorder.open()
@@ -984,9 +993,14 @@ class AuralensApp:
             sample_id = f"tv5-{int(time.time() * 1000)}"
             recorder.start_recording(sample_id)
 
-            # Wait for "Dừng" (or for the window to close) without busy-waiting.
+            # Wait for "Dừng", the window closing, or an automatic stop because a
+            # capture limit (duration / frame cap) was reached.
             while not self._recording_done_event.wait(0.05):
                 if self._stop_event.is_set() or self._is_closing:
+                    break
+                if not recorder.is_recording or getattr(
+                    recorder, "limit_reached", False
+                ):
                     break
 
             captured = recorder.stop_recording()
@@ -997,16 +1011,51 @@ class AuralensApp:
 
             audio = captured["audio"]
             frames = captured["video_frames"]
-            seconds = captured["duration_ms"] / 1000.0
+            sample_id = captured["sample_id"]
+
+            # Report the length of what was actually buffered: when the duration
+            # cap stops capture, the session is longer than the content.
+            sample_rate = int(captured["sample_rate"]) or 1
+            seconds = (
+                len(audio) / sample_rate
+                if len(audio)
+                else captured["duration_ms"] / 1000.0
+            )
+
+            # Persist the turn as pilot data. Saving happens on this worker
+            # thread and must not hide the capture numbers if the disk write
+            # fails, so the error is reported instead of raised.
+            saved: Optional[Dict[str, Any]] = None
+            save_error = ""
+            try:
+                from auralens.capture.storage import save_capture
+
+                saved = save_capture(captured, self.output_dir)
+            except Exception as ex:
+                logger.exception("Failed to save capture %s", sample_id)
+                save_error = str(ex)
+
+            limit_note = ""
+            if captured.get("limit_reached"):
+                reason = captured.get("limit_reason") or "thời lượng"
+                limit_note = f" · dừng ở giới hạn {reason}"
+
+            if saved is None:
+                text = f"Đã thu {seconds:.1f} giây — chưa lưu được file"
+                file_note = f"lỗi lưu: {save_error}" if save_error else "chưa lưu file"
+            else:
+                text = f"Đã thu {seconds:.1f} giây — đã lưu mẫu {sample_id}"
+                file_note = f"lưu tại {saved['directory']}"
+
             self.queue.put(
                 {
                     "type": "subtitle",
-                    "text": f"Đã thu {seconds:.1f} giây — chưa có pipeline nhận dạng",
+                    "text": text + limit_note,
                     "status": STATUS_UNCERTAIN,
                     "meta": (
-                        f"{captured['sample_id']} · {len(audio)} mẫu @ "
+                        f"{sample_id} · {len(audio)} mẫu @ "
                         f"{captured['sample_rate']} Hz · {len(frames)} frame · "
-                        "chưa nối TV4"
+                        f"{file_note} · chưa nối TV4"
                     ),
                     "finished": True,
                 }

@@ -83,4 +83,25 @@
 - **Giải phóng thiết bị:** `Recorder.close()` nằm trong `finally` của lượt thu và được gọi lại ở `_on_close()`. Đã kiểm tra: sau khi đóng app, `cv2.VideoCapture(0).read()` mở lại thành công.
 - **Hợp đồng message mới:** `{"type": "device", "text": str}` — worker gửi, UI chỉ cập nhật nhãn ở `_poll_queue`.
 - **Điểm tiêm để test:** `AuralensApp(..., recorder_factory=...)`; test dùng `FakeRecorder`, không cần phần cứng.
-- **Chưa làm:** chưa ghi audio/video ra file, frame còn giữ trong RAM, chưa đo độ trễ cuối câu → phụ đề.
+- **Lưu mẫu (2026-11-17):** đã có `auralens/capture/storage.py` ghi `audio.wav` + `video.avi` + `manifest.json` theo `sample_id`; giới hạn thu mặc định 15 s / 450 frame để không đầy RAM (xem mục 7).
+- **Chưa làm:** chưa đo độ trễ cuối câu → phụ đề; chưa có buổi thu pilot chung với TV2/TV3.
+
+## 7. Định dạng mẫu thu cho TV2/TV3 (2026-11-17)
+
+```text
+python -m auralens.app.run --no-mock --output-dir recordings --max-seconds 15
+
+recordings/<sample_id>/
+    audio.wav      # WAV mono float32, 16 kHz (format code 3, không lượng tử hoá)
+    video.avi      # MJPG, fps suy từ timestamp frame
+    manifest.json  # sample_id, created_at, sample_rate, duration_ms, audio_duration_ms,
+                   # num_audio_samples, num_frames, frame_timestamps_ms,
+                   # last_frame_timestamp_ms, video_fps, device_info,
+                   # limit_reached, limit_reason, max_duration_s, files
+```
+
+- `frame_timestamps_ms` là mốc monotonic (ms) từ đầu bản thu; không dùng frame index thay timestamp.
+- `duration_ms` là độ dài phiên; `audio_duration_ms` và `last_frame_timestamp_ms` là độ dài nội dung thực — ngắn hơn khi `limit_reached=true`.
+- Gọi trực tiếp: `from auralens.capture.storage import save_capture; save_capture(result, "recordings")`, trong đó `result` là dict của `Recorder.stop_recording()`.
+- `recordings/` đã nằm trong `.gitignore`; không commit bản thu có giọng/mặt người tham gia.
+- `sample_id` chỉ nhận `[A-Za-z0-9._-]` (1–64 ký tự) vì được dùng làm tên thư mục.

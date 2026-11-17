@@ -1,5 +1,10 @@
 """Unit tests for AuralensApp UI prototype."""
 
+import json
+import os
+import shutil
+import struct
+import tempfile
 import time
 import tkinter as tk
 import unittest
@@ -143,18 +148,31 @@ class FakeRecorder:
     """Recorder giả: kiểm tra vòng đời thiết bị mà không cần phần cứng."""
 
     def __init__(
-        self, camera_index: int = 0, audio_device=None, sample_rate: int = 16000
+        self,
+        camera_index: int = 0,
+        audio_device=None,
+        sample_rate: int = 16000,
+        max_duration_s: float = 15.0,
     ) -> None:
         self.calls: list[str] = []
         self.sample_id = ""
         self.sample_rate = sample_rate
+        self.max_duration_s = max_duration_s
         self.fail_open = False
+        self.frame_count = 2
+        self.limit_reached = False
+        self.limit_reason = None
+        self._is_recording = False
         self.device_info = {
             "camera_index": camera_index,
             "camera_width": 640,
             "camera_height": 480,
             "mic_device_name": "Mic giả lập",
         }
+
+    @property
+    def is_recording(self) -> bool:
+        return self._is_recording
 
     def open(self) -> None:
         self.calls.append("open")
@@ -164,20 +182,30 @@ class FakeRecorder:
     def start_recording(self, sample_id: str) -> None:
         self.calls.append("start")
         self.sample_id = sample_id
+        self._is_recording = True
 
     def stop_recording(self) -> dict:
         self.calls.append("stop")
+        self._is_recording = False
+        frames = [
+            (index * 33, np.zeros((48, 64, 3), dtype=np.uint8))
+            for index in range(self.frame_count)
+        ]
         return {
             "sample_id": self.sample_id,
             "audio": np.zeros(16000, dtype=np.float32),
-            "video_frames": [],
+            "video_frames": frames,
             "sample_rate": 16000,
             "duration_ms": 1000,
             "device_info": dict(self.device_info),
+            "limit_reached": self.limit_reached,
+            "limit_reason": self.limit_reason,
+            "max_duration_s": self.max_duration_s,
         }
 
     def close(self) -> None:
         self.calls.append("close")
+        self._is_recording = False
 
 
 class TestLiveCaptureIntegration(unittest.TestCase):
@@ -186,7 +214,14 @@ class TestLiveCaptureIntegration(unittest.TestCase):
     def _make_app(self, fake: FakeRecorder):
         root = tk.Tk()
         root.withdraw()  # không hiện cửa sổ khi chạy test
-        app = AuralensApp(root=root, mock_mode=False, recorder_factory=lambda **_: fake)
+        out_dir = tempfile.mkdtemp(prefix="auralens-test-")
+        self.addCleanup(shutil.rmtree, out_dir, True)
+        app = AuralensApp(
+            root=root,
+            mock_mode=False,
+            recorder_factory=lambda **_: fake,
+            output_dir=out_dir,
+        )
         return root, app
 
     @staticmethod
@@ -268,6 +303,92 @@ class TestLiveCaptureIntegration(unittest.TestCase):
             self.assertEqual(app.status_indicator.cget("text"), STATUS_ERROR)
             self.assertNotIn("Đã thu", app.subtitle_label.cget("text"))
             self.assertIn("close", fake.calls)
+        finally:
+            app._on_close()
+
+    def test_live_turn_writes_audio_video_and_manifest(self) -> None:
+        """Lượt thu thật ghi audio.wav, video.avi và manifest.json theo sample_id."""
+        fake = FakeRecorder()
+        root, app = self._make_app(fake)
+        try:
+            app._on_start_stop()
+            self.assertTrue(self._pump(root, lambda: "start" in fake.calls))
+
+            app._on_start_stop()  # Dừng
+            self.assertTrue(
+                self._pump(
+                    root,
+                    lambda: "đã lưu mẫu" in app.subtitle_label.cget("text"),
+                ),
+                "phụ đề chưa báo đã lưu mẫu",
+            )
+
+            sample_dir = os.path.join(app.output_dir, fake.sample_id)
+            self.assertTrue(os.path.isdir(sample_dir), sample_dir)
+            for name in ("audio.wav", "video.avi", "manifest.json"):
+                self.assertTrue(os.path.isfile(os.path.join(sample_dir, name)), name)
+
+            with open(
+                os.path.join(sample_dir, "manifest.json"), encoding="utf-8"
+            ) as handle:
+                manifest = json.load(handle)
+
+            self.assertEqual(manifest["sample_id"], fake.sample_id)
+            self.assertEqual(manifest["sample_rate"], 16000)
+            self.assertEqual(manifest["num_audio_samples"], 16000)
+            self.assertEqual(manifest["num_frames"], fake.frame_count)
+            self.assertEqual(len(manifest["frame_timestamps_ms"]), fake.frame_count)
+            self.assertEqual(manifest["device_info"]["camera_width"], 640)
+            self.assertEqual(manifest["device_info"]["mic_device_name"], "Mic giả lập")
+            self.assertIn("created_at", manifest)
+            self.assertFalse(manifest["limit_reached"])
+
+            with open(os.path.join(sample_dir, "audio.wav"), "rb") as handle:
+                header = handle.read(44)
+            self.assertEqual(header[:4], b"RIFF")
+            self.assertEqual(struct.unpack("<H", header[20:22])[0], 3)  # float32
+            self.assertEqual(struct.unpack("<I", header[24:28])[0], 16000)
+
+            import cv2
+
+            video = cv2.VideoCapture(os.path.join(sample_dir, "video.avi"))
+            try:
+                self.assertTrue(video.isOpened())
+                ok, frame = video.read()
+                self.assertTrue(ok)
+                self.assertEqual(frame.shape[:2], (48, 64))
+            finally:
+                video.release()
+        finally:
+            app._on_close()
+
+    def test_limit_reached_is_reported_and_saved(self) -> None:
+        """Chạm giới hạn thời lượng: UI báo giới hạn và manifest ghi lại."""
+        fake = FakeRecorder(max_duration_s=0.2)
+        root, app = self._make_app(fake)
+        try:
+            app._on_start_stop()
+            self.assertTrue(self._pump(root, lambda: "start" in fake.calls))
+
+            # Recorder tự dừng khi chạm giới hạn; app phải nhận ra và kết thúc lượt.
+            fake.limit_reached = True
+            fake.limit_reason = "duration"
+            self.assertTrue(
+                self._pump(
+                    root,
+                    lambda: "giới hạn" in app.subtitle_label.cget("text")
+                    and "đã lưu mẫu" in app.subtitle_label.cget("text"),
+                ),
+                "phụ đề chưa báo giới hạn thời lượng",
+            )
+
+            with open(
+                os.path.join(app.output_dir, fake.sample_id, "manifest.json"),
+                encoding="utf-8",
+            ) as handle:
+                manifest = json.load(handle)
+            self.assertTrue(manifest["limit_reached"])
+            self.assertEqual(manifest["limit_reason"], "duration")
         finally:
             app._on_close()
 
