@@ -1,0 +1,9 @@
+# TV5 — Application, display and capture
+# Python 3.10+
+# Install: pip install -r requirements-tv5.txt
+
+opencv-python>=4.8.0
+sounddevice>=0.4.6
+numpy>=1.24.0
+# tkinter is part of Python standard library — ensure python3-tk is installed on Linux
+# On Windows, tkinter is included with the Python installer
