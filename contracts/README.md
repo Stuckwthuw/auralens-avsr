@@ -10,6 +10,8 @@ Scores gồm 10 số hữu hạn, không âm, tổng lệch 1 tối đa 1e-6. va
 
 Đầu ra UI gồm sample_id, mode, text, status, reason, model_version, infer_ms. Mode hợp lệ theo kế hoạch là asr_free/audio_10/visual_10/av_10. Status là ok/uncertain/invalid/error. Entry point tuần 1 là mock, luôn trả mock=true, text rỗng, uncertain hoặc invalid. UI phát triển phải hiển thị nhãn MOCK từ trường này.
 
+Trong pilot thật, `asr.json` giữ đủ bảy trường đầu ra kể cả khi thiếu tiếng hoặc xử lý lỗi. Bản nháp để `model_version=null` và `infer_ms=null` khi nhánh không có kết quả suy luận. Kiểu nullable này chờ TV5 xác nhận. Một nguồn vắng trả `invalid` và lý do `missing_audio` hoặc `missing_video`. Nếu nguồn có mặt nhưng xử lý thất bại, nhánh đó trả `error` với lý do `audio_processing_failed` hoặc `video_processing_failed`. Pilot vẫn thử nhánh còn lại và ghi trạng thái cả hai vào `summary.json`.
+
 Fixture gồm đủ nguồn, thiếu video, thiếu audio và thiếu cả hai. Validator thực thi ở auralens/contracts.py. Ca sai dữ liệu nằm trong tests/test_week01.py.
 
 Audio mục tiêu là mono float32 16 kHz hữu hạn. Pilot landmarks của TV3 có timestamp_ms theo nguồn và valid chỉ phản ánh model tìm được mặt. Adapter thật cần kiểm tra chất lượng khẩu hình và đồng bộ nguồn trước khi tạo kết quả visual_10. Phiên này chưa hiện thực chuẩn hóa audio hoặc chuyển landmarks thành điểm phân loại.

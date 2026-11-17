@@ -131,3 +131,9 @@ Cả ba ca đã đối chiếu `sample_id` giữa hai đầu ra. Video minh ch�
 Đã gọi `FasterWhisperASR.transcribe_file` từ mã TV2 đã merge trên `main`. Đầu vào là WAV mono float32 16 kHz tách từ cùng bản thu `local_recording_001`. Dùng cấu hình mặc định của TV2 gồm Medium, CPU int8, tiếng Việt và PyAV 18.0.0 theo bản bàn giao.
 
 Kết quả có 9 thao tác trên 78 ký tự tham chiếu, **CER 11,54%**, thời gian suy luận 3774 ms và thời gian nạp mô hình từ cache 1316 ms. Bản chép và cách chuẩn hóa giữ như ba lượt trước. Medium được chạy qua hàm đọc WAV của TV2, trong khi Tiny, Base và Small nhận mảng audio qua FFmpeg. Đây là phép kiểm tra một clip giữa các cấu hình pilot. Nhật ký và script lưu tại `pilot-data/week01-validation/tv2-medium-evaluation.json` và `run_tv2.py`.
+
+### Sau review PR #8
+
+Đã kiểm tra lỗi độc lập của hai nhánh trên bản thu có đủ tiếng và hình. Khi cache Whisper vắng, ASR báo `error / audio_processing_failed`, còn Face Landmarker trả điểm môi ở 335/335 khung. Khi tệp Face Landmarker vắng, nhánh hình báo `error / video_processing_failed`, còn ASR vẫn trả văn bản. Cả hai ca xuất `summary.json`.
+
+Bản chỉ có hình trả `invalid / missing_audio` và đủ bảy trường ASR. Bản nháp dùng `model_version=null` và `infer_ms=null` khi không có kết quả suy luận, chờ TV5 xác nhận. Bảy kiểm thử đơn vị đạt, gồm ba ca hồi quy cho hai nhánh lỗi và cấu trúc kết quả khi thiếu tiếng. [Bình luận review](https://github.com/Stuckwthuw/auralens-avsr/pull/8#issuecomment-6943481678)

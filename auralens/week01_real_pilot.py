@@ -31,25 +31,19 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     (args.output / "timing.json").write_text(timing, encoding="utf-8")
 
-    asr = ({"sample_id": args.sample_id, "mode": "asr_free", "text": "",
-            "status": "invalid", "reason": "missing_audio", "infer_ms": None}
-           if "audio" in missing else run_audio(args))
+    asr = run_branch(args, "audio", missing, run_audio, {
+        "mode": "asr_free", "text": "", "model_version": None, "infer_ms": None,
+    })
+    vision = run_branch(args, "video", missing, run_vision, {
+        "frame_count": 0, "valid_frames": 0, "processing_ms": None,
+    })
     (args.output / "asr.json").write_text(json.dumps(asr, ensure_ascii=False), encoding="utf-8")
-    if "video" in missing:
-        vision = {"sample_id": args.sample_id, "frame_count": 0, "valid_frames": 0,
-                  "processing_ms": None, "status": "invalid", "reason": "missing_video"}
-    else:
-        vision = run_vision(args)
-        vision["status"] = "ok" if vision["valid_frames"] else "invalid"
-        vision["reason"] = None if vision["valid_frames"] else "no_face"
     (args.output / "vision-status.json").write_text(
         json.dumps({key: vision[key] for key in
                     ("sample_id", "frame_count", "valid_frames", "processing_ms", "status", "reason")}),
         encoding="utf-8",
     )
 
-    if vision["sample_id"] != args.sample_id or asr["sample_id"] != args.sample_id:
-        raise ValueError("pilot output sample IDs do not match")
     summary = {
         "sample_id": args.sample_id, "mock": False,
         "asr_status": asr["status"], "asr_infer_ms": asr["infer_ms"],
@@ -60,6 +54,22 @@ def main():
     }
     (args.output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary))
+
+
+def run_branch(args, source, missing, run, unavailable):
+    fallback = {"sample_id": args.sample_id, **unavailable}
+    if source in missing:
+        return {**fallback, "status": "invalid", "reason": f"missing_{source}"}
+
+    # Isolate failures from third-party decoders, models and child processes.
+    try:
+        result = run(args)
+        if result["sample_id"] != args.sample_id:
+            raise ValueError("pilot output sample ID does not match input")
+    except Exception as error:
+        print(f"{source} processing failed ({type(error).__name__})", file=sys.stderr)
+        return {**fallback, "status": "error", "reason": f"{source}_processing_failed"}
+    return result
 
 
 def run_audio(args):
@@ -96,7 +106,10 @@ def run_vision(args):
          "--sample-id", args.sample_id, "--single-person-confirmed"],
         check=True,
     )
-    return json.loads((args.output / "vision/pilot_landmarks.json").read_text(encoding="utf-8"))
+    result = json.loads((args.output / "vision/pilot_landmarks.json").read_text(encoding="utf-8"))
+    result["status"] = "ok" if result["valid_frames"] else "invalid"
+    result["reason"] = None if result["valid_frames"] else "no_face"
+    return result
 
 
 if __name__ == "__main__":
