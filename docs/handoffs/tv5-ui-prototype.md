@@ -105,3 +105,6 @@ recordings/<sample_id>/
 - Gọi trực tiếp: `from auralens.capture.storage import save_capture; save_capture(result, "recordings")`, trong đó `result` là dict của `Recorder.stop_recording()`.
 - `recordings/` đã nằm trong `.gitignore`; không commit bản thu có giọng/mặt người tham gia.
 - `sample_id` chỉ nhận `[A-Za-z0-9._-]` (1–64 ký tự) vì được dùng làm tên thư mục.
+- Đọc frame theo timestamp thật: `from auralens.capture.storage import iter_timed_frames`, rồi `for ts_ms, frame in iter_timed_frames("recordings/<sample_id>"): ...`. AVI chỉ có fps trung bình nên `CAP_PROP_POS_MSEC` không phải mốc lúc thu; hàm này báo lỗi nếu số frame lệch manifest.
+- `manifest.json` có `audio_timing` (block start/end trên `time.perf_counter`, `first_block_start_ms` có thể âm, `gaps_ms`, `overflow_count`) và `video_timing` (fps trung bình, nguồn timestamp). Mốc audio là **xấp xỉ theo block**, không mẫu-chính-xác: dùng `first_block_start_ms` làm offset thay vì giả định 0.
+- Nhận kết quả TV4: `from auralens.app.main_window import asr_result_to_message` hoặc gọi `app.handle_asr_result(result)` (thread-safe, chỉ đẩy vào `queue`). `invalid/missing_audio` → "Thiếu âm thanh" với trạng thái `Chưa nhận dạng rõ`; `model_version`/`infer_ms` là `null` thì không hiển thị; mọi kết quả đều `finished: true`.

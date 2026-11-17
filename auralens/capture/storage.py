@@ -23,7 +23,7 @@ import re
 import struct
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -110,7 +110,8 @@ def write_video(
         fallback_fps: Frame rate used when timestamps cannot provide one.
 
     Returns:
-        The frame rate (FPS) actually written, derived from frame timestamps.
+        The frame rate (FPS) written: -1 frame per average capture interval, so
+        the AVI plays for approximately the recorded duration.
 
     Raises:
         RuntimeError: If the MJPG writer cannot be opened.
@@ -124,12 +125,16 @@ def write_video(
     first = frames[0][1]
     height, width = first.shape[:2]
 
+    # AVI only knows a constant frame rate. Use the average over the real capture
+    # span (not the median gap between neighbours): cameras deliver frames in
+    # bursts, so a median gap can be a few ms and inflate the rate until playback
+    # runs much faster than the recorded wall time. Per-frame timestamps stay in
+    # the manifest and are the authoritative source (see iter_timed_frames).
     fps = float(fallback_fps)
     if len(frames) > 1:
-        deltas = np.diff(np.asarray([ts for ts, _ in frames], dtype=np.int64))
-        deltas = deltas[deltas > 0]
-        if deltas.size:
-            fps = 1000.0 / float(np.median(deltas))
+        span_ms = int(frames[-1][0]) - int(frames[0][0])
+        if span_ms > 0:
+            fps = (len(frames) - 1) * 1000.0 / span_ms
     fps = max(1.0, min(120.0, fps))
 
     target = Path(path)
@@ -209,6 +214,20 @@ def save_capture(
         "limit_reason": captured.get("limit_reason"),
         "max_duration_s": captured.get("max_duration_s"),
         "device_info": device_info,
+        "audio_timing": captured.get("audio_timing") or {},
+        "video_timing": (
+            {
+                "container": "avi/MJPG",
+                "constant_fps": round(fps, 3) if fps is not None else None,
+                "per_frame_timestamps": "frame_timestamps_ms",
+                "note": (
+                    "AVI không giữ timestamp tuyệt đối; đọc frame bằng "
+                    "iter_timed_frames() để dùng timestamp của manifest."
+                ),
+            }
+            if video_path is not None
+            else None
+        ),
         "audio_format": "wav/float32/mono",
         "video_format": "avi/MJPG" if video_path is not None else None,
         "files": {
@@ -239,3 +258,59 @@ def save_capture(
         "manifest_file": str(manifest_path),
         "manifest": manifest,
     }
+
+
+def iter_timed_frames(
+    sample_dir: Union[str, Path],
+) -> Iterator[Tuple[int, np.ndarray]]:
+    """Read ``video.avi`` and pair each frame with its manifest timestamp.
+
+    The AVI container only knows a constant FPS, so ``CAP_PROP_POS_MSEC`` stops
+    matching capture time as soon as frames are dropped or the first frame does
+    not start at 0 ms. Consumers must take the timestamp from
+    ``manifest.json`` (``frame_timestamps_ms``) instead of the container.
+
+    Args:
+        sample_dir: Directory containing ``manifest.json`` and the video file.
+
+    Yields:
+        ``(timestamp_ms, frame)`` in capture order.
+
+    Raises:
+        ValueError: If the sample has no video, no timestamps, or the video
+            frame count does not match the manifest.
+        RuntimeError: If the video file cannot be opened.
+    """
+    import cv2
+
+    directory = Path(sample_dir)
+    with open(directory / "manifest.json", encoding="utf-8") as handle:
+        manifest = json.load(handle)
+
+    video_name = (manifest.get("files") or {}).get("video")
+    if not video_name:
+        raise ValueError(f"{directory} không có video trong manifest")
+
+    timestamps = [int(ts) for ts in manifest.get("frame_timestamps_ms") or []]
+    if not timestamps:
+        raise ValueError(f"{directory} không có frame_timestamps_ms trong manifest")
+
+    capture = cv2.VideoCapture(str(directory / video_name))
+    if not capture.isOpened():
+        raise RuntimeError(f"Không mở được {directory / video_name}")
+
+    try:
+        index = 0
+        while index < len(timestamps):
+            ok, frame = capture.read()
+            if not ok:
+                break
+            yield timestamps[index], frame
+            index += 1
+        if index != len(timestamps):
+            raise ValueError(
+                f"{video_name} có {index} frame nhưng manifest ghi {len(timestamps)}; "
+                "không ghép timestamp theo thứ tự khi số frame lệch"
+            )
+    finally:
+        capture.release()

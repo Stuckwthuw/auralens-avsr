@@ -148,6 +148,88 @@ STATUS_COLORS: Dict[str, Dict[str, Tuple[str, str]]] = {
 }
 
 
+MISSING_AUDIO_TEXT: str = "Thiếu âm thanh"
+
+
+def asr_result_to_message(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert a TV4 ASR/A-V result into a UI queue message.
+
+    TV4 returns ``sample_id``, ``mode``, ``text``, ``status``, ``reason``,
+    ``model_version`` and ``infer_ms``. ``model_version``/``infer_ms`` may be
+    ``None`` (for example ``invalid/missing_audio``) and must then be omitted
+    from the subtitle metadata instead of displayed as text.
+
+    Args:
+        result: TV4 result dictionary.
+
+    Returns:
+        Message for ``AuralensApp.queue``.
+    """
+    sample_id = str(result.get("sample_id") or "").strip()
+    status = str(result.get("status") or "").strip().lower()
+    reason = str(result.get("reason") or "").strip().lower()
+    text = str(result.get("text") or "").strip()
+
+    parts: List[str] = [sample_id] if sample_id else []
+    mode = result.get("mode")
+    if mode:
+        parts.append(str(mode))
+    model_version = result.get("model_version")
+    if model_version:
+        parts.append(f"model {model_version}")
+    infer_ms = result.get("infer_ms")
+    if infer_ms is not None:
+        parts.append(f"{infer_ms} ms")
+    meta = " · ".join(parts)
+
+    if status == "ok":
+        if text:
+            return {
+                "type": "subtitle",
+                "text": text,
+                "status": STATUS_READY,
+                "meta": meta,
+                "finished": True,
+            }
+        return {
+            "type": "subtitle",
+            "text": UNCERTAIN_EXPERIMENT_TEXT,
+            "status": STATUS_UNCERTAIN,
+            "meta": meta,
+            "finished": True,
+        }
+
+    if status == "invalid":
+        # invalid/missing_audio: TV4 vẫn trả đủ trường, nhưng model_version và
+        # infer_ms là None nên chỉ hiển thị phần có giá trị.
+        label = MISSING_AUDIO_TEXT if reason == "missing_audio" else UNCERTAIN_EXPERIMENT_TEXT
+        return {
+            "type": "subtitle",
+            "text": label,
+            "status": STATUS_UNCERTAIN,
+            "meta": meta,
+            "finished": True,
+        }
+
+    if status == "uncertain":
+        return {
+            "type": "subtitle",
+            "text": text or UNCERTAIN_EXPERIMENT_TEXT,
+            "status": STATUS_UNCERTAIN,
+            "meta": meta,
+            "finished": True,
+        }
+
+    detail = text or reason or "không rõ nguyên nhân"
+    return {
+        "type": "error",
+        "text": f"Lỗi nhận dạng: {detail}",
+        "status": STATUS_ERROR,
+        "meta": meta,
+        "finished": True,
+    }
+
+
 def _tao_recorder(**kwargs: Any) -> Any:
     """Create the real Recorder lazily.
 
@@ -1082,6 +1164,14 @@ class AuralensApp:
                     {"type": "device", "text": "Thiết bị: đã nhả camera & micro"}
                 )
 
+    def handle_asr_result(self, result: Dict[str, Any]) -> None:
+        """Publish a TV4 result to the UI thread.
+
+        Safe to call from any worker thread: it only enqueues a message, and
+        ``_poll_queue`` applies it on the UI thread.
+        """
+        self.queue.put(asr_result_to_message(result))
+
     def _poll_queue(self) -> None:
         """Poll the message queue from background workers and update UI on main thread."""
         if self._is_closing:
@@ -1113,7 +1203,8 @@ class AuralensApp:
                 elif msg_type == "error":
                     text = message.get("text", "Lỗi")
                     self._update_subtitle(text, STATUS_ERROR)
-                    self.subtitle_meta_label.configure(text="Đã phát sinh lỗi trong quá trình xử lý")
+                    meta = message.get("meta") or "Đã phát sinh lỗi trong quá trình xử lý"
+                    self.subtitle_meta_label.configure(text=meta)
                     if message.get("finished", False):
                         self._finish_run()
 

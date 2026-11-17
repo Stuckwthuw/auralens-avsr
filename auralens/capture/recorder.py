@@ -31,6 +31,9 @@ class Recorder:
     with shared monotonic millisecond timestamps from recording start.
     """
 
+    #: Khoảng trống giữa hai block audio lớn hơn giá trị này được ghi nhận là gián đoạn.
+    AUDIO_GAP_THRESHOLD_MS = 100
+
     def __init__(
         self,
         camera_index: int = 0,
@@ -77,6 +80,8 @@ class Recorder:
         self._frame_count: int = 0
 
         self._audio_chunks: List[np.ndarray] = []
+        #: Mỗi block audio: start_ms/end_ms trên cùng đồng hồ với frame (xấp xỉ).
+        self._audio_blocks: List[Dict[str, Any]] = []
         self._video_frames: List[Tuple[int, np.ndarray]] = []
 
         self._video_thread: Optional[threading.Thread] = None
@@ -206,9 +211,28 @@ class Recorder:
 
         # Flatten input to 1D mono float32 chunk and copy to detach from driver buffer
         chunk = indata.flatten().astype(np.float32, copy=True)
+
+        # Audio arrives in driver blocks, so its timeline is estimated: the block
+        # end is the callback time and the start is one block earlier. Both are
+        # on time.perf_counter, the same clock as frame timestamps, but they are
+        # not sample-accurate — the first block can start before/after
+        # start_recording(), which is why the offset is recorded, not assumed.
+        now = time.perf_counter()
+        end_ms = int(round((now - self._recording_start_time) * 1000.0))
+        block_ms = int(round(chunk.size * 1000.0 / max(1, self.sample_rate)))
+        overflow = bool(getattr(status, "input_overflow", False))
+
         with self._audio_lock:
-            if self._is_recording:
+            if self._is_recording and not self._limit_reached:
                 self._audio_chunks.append(chunk)
+                self._audio_blocks.append(
+                    {
+                        "start_ms": end_ms - block_ms,
+                        "end_ms": end_ms,
+                        "frames": int(chunk.size),
+                        "overflow": overflow,
+                    }
+                )
 
     def _trip_limit(self, reason: str) -> None:
         """Stop buffering new data once a capture limit is reached.
@@ -298,6 +322,7 @@ class Recorder:
 
             with self._audio_lock:
                 self._audio_chunks.clear()
+                self._audio_blocks.clear()
 
             with self._video_lock:
                 self._video_frames.clear()
@@ -346,10 +371,12 @@ class Recorder:
 
             duration_ms = max(0, int(round((stop_time - self._recording_start_time) * 1000.0)))
 
-            # Collect audio chunks
+            # Collect audio chunks and their estimated block spans
             with self._audio_lock:
                 chunks = list(self._audio_chunks)
+                blocks = list(self._audio_blocks)
                 self._audio_chunks.clear()
+                self._audio_blocks.clear()
 
             if chunks:
                 audio = np.concatenate(chunks, axis=0).astype(np.float32)
@@ -368,6 +395,8 @@ class Recorder:
                 video_frames = list(self._video_frames)
                 self._video_frames.clear()
 
+            audio_timing = self._build_audio_timing(blocks)
+
             sample_id = self._sample_id or ""
             self._sample_id = None
 
@@ -382,7 +411,39 @@ class Recorder:
                 "limit_reason": self._limit_reason,
                 "max_duration_s": self.max_duration_s,
                 "max_frames": self.max_frames,
+                "audio_timing": audio_timing,
             }
+
+    def _build_audio_timing(self, blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Describe how the audio timeline was estimated and where it is unsure."""
+        gaps: List[Dict[str, int]] = []
+        for previous, current in zip(blocks, blocks[1:]):
+            gap = int(current["start_ms"]) - int(previous["end_ms"])
+            if gap > self.AUDIO_GAP_THRESHOLD_MS:
+                gaps.append({"at_ms": int(previous["end_ms"]), "gap_ms": gap})
+
+        return {
+            "clock": "time.perf_counter",
+            "estimated": True,
+            "method": (
+                "block end = callback time; block start = end - frames/sample_rate; "
+                "not sample-accurate"
+            ),
+            "first_block_start_ms": int(blocks[0]["start_ms"]) if blocks else None,
+            "last_block_end_ms": int(blocks[-1]["end_ms"]) if blocks else None,
+            "block_count": len(blocks),
+            "overflow_count": sum(1 for block in blocks if block["overflow"]),
+            "gaps_ms": gaps,
+            "blocks": [
+                [
+                    int(block["start_ms"]),
+                    int(block["end_ms"]),
+                    int(block["frames"]),
+                    bool(block["overflow"]),
+                ]
+                for block in blocks
+            ],
+        }
 
     def close(self) -> None:
         """Release camera and audio stream resources.

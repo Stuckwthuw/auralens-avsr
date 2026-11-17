@@ -64,6 +64,16 @@ Trạng thái: **VERIFIED ở mức tự động + chạy thiết bị thật**.
 - UI: kết thúc lượt hiện `Đã thu X giây — đã lưu mẫu <sample_id>` kèm đường dẫn ở dòng meta; lỗi ghi đĩa hiện `chưa lưu được file` chứ không che số liệu thu.
 - CLI: `python -m auralens.app.run --no-mock --output-dir recordings --max-seconds 15`.
 
+### Task E — Gốc thời gian audio/video và nhận kết quả TV4 (theo review PR #9)
+
+Trạng thái: **VERIFIED ở mức tự động + chạy thiết bị thật**; mốc audio vẫn là xấp xỉ, chưa hiệu chuẩn với TV4.
+
+- `Recorder` ghi mốc từng block audio trên `time.perf_counter` — cùng đồng hồ với frame. `audio_timing` gồm `first_block_start_ms` (offset thật, có thể âm), `last_block_end_ms`, `block_count`, `overflow_count` (từ `status.input_overflow`), `gaps_ms` (gián đoạn > 100 ms) và `blocks`. Không còn giả định audio bắt đầu đúng 0 ms nhưng cũng **không** tuyên bố mẫu-chính-xác.
+- `manifest.json` thêm `audio_timing` và `video_timing`; AVI chỉ có fps trung bình nên consumer phải đọc frame bằng `storage.iter_timed_frames()` — hàm này ghép `frame_timestamps_ms` và báo lỗi khi số frame lệch thay vì ghép theo thứ tự.
+- `write_video` đổi từ fps theo median từng cặp sang fps trung bình trên khoảng timestamp thật: lần chạy thật cho median 9 ms → 111 fps (phát nhanh gấp ~3,5 lần), sau khi sửa còn 30,86 fps → phát 1,49 s cho bản thu 1,48 s.
+- Cầu nối TV4: `asr_result_to_message()` + `AuralensApp.handle_asr_result()` (chỉ đẩy message vào `queue`, UI cập nhật ở `_poll_queue`). `ok` → `Sẵn sàng` + `text`; `invalid/missing_audio` → `Thiếu âm thanh` + `Chưa nhận dạng rõ`; `error` → `Lỗi`; `model_version`/`infer_ms` là `null` thì bỏ khỏi dòng meta; mọi kết quả đều `finished: true` để bấm **Bắt đầu** lại.
+- Chưa làm: hiệu chuẩn offset audio với TV4/TV3, đo sai lệch mốc thật, và định dạng giữ timestamp tuyệt đối thay cho AVI.
+
 ## 3. Kiến thức đã học và áp dụng
 
 - Vòng đời thiết bị: `open()` ở đầu lượt, `close()` trong `finally`, và đóng lần hai ở `_on_close()` cho trường hợp worker còn kẹt. Đây là cách duy nhất để tiêu chí "app giải phóng thiết bị" có bằng chứng thay vì lời khai.
@@ -81,11 +91,11 @@ Môi trường: Windows, Python 3.14.7, Tkinter 9.0, OpenCV 5.0.0, sounddevice 0
 **Kiểm thử tự động** — `python -m unittest discover tests`:
 
 ```text
-Ran 19 tests in 4.063s
+Ran 26 tests in 6.646s
 OK
 ```
 
-19/19 đạt, gồm 3 ca tích hợp thiết bị, 8 ca cho phần lưu mẫu / giới hạn và 1 ca cho xuống dòng khi resize:
+26/26 đạt, gồm 3 ca tích hợp thiết bị, 8 ca lưu mẫu/giới hạn, 1 ca xuống dòng khi resize và 7 ca cho review PR #9:
 
 - `test_live_turn_opens_records_stops_and_releases`: mở → thu → Dừng → đóng; nhãn thiết bị lấy từ `device_info`; phụ đề là "Đã thu…" với `status=uncertain`.
 - `test_close_window_mid_recording_releases_devices`: đóng cửa sổ giữa lượt thu vẫn gọi `close()`.
@@ -94,6 +104,13 @@ OK
 - `test_limit_reached_is_reported_and_saved`: chạm giới hạn → phụ đề báo "giới hạn", manifest ghi `limit_reached=true`.
 - `test_writes_audio_video_and_manifest`, `test_audio_is_float32_wav`, `test_without_frames_omits_video`, `test_rejects_unsafe_sample_id` (storage), `test_duration_limit_stops_buffering`, `test_invalid_limit_is_rejected` (Recorder): dữ liệu numpy tổng hợp, không cần phần cứng.
 - `test_subtitle_wraplength_follows_resize`: rộng 500 px → `wraplength=452`; rộng 100 px → chặn dưới `200`; bắn `<Configure>` thật với rộng 700 px → `wraplength=652`.
+- `test_delayed_block_and_overflow_are_recorded`: block trễ 150 ms → 1 gián đoạn; block có `input_overflow` → `overflow_count=1`; block đầu bắt đầu ≤ 0 ms (offset âm được ghi lại).
+- `test_contiguous_blocks_have_no_gap`: hai block liền nhau → không gián đoạn, không overflow.
+- `test_manifest_keeps_audio_and_video_timing`: `audio_timing` và `video_timing` được ghi nguyên vào manifest.
+- `test_iter_timed_frames_uses_manifest_timestamps`: frame không đều, mốc đầu 120 ms → adapter trả đúng `[120, 140, 400]`.
+- `test_iter_timed_frames_requires_a_saved_video`: mẫu không có video/không có timestamp → `ValueError`, không bịa mốc.
+- `test_tv4_missing_audio_result_shows_message_and_finishes`: `invalid/missing_audio` với `model_version`/`infer_ms` = `null` → "Thiếu âm thanh", `Chưa nhận dạng rõ`, meta không có "model"/"ms", nút **Bắt đầu** bấm lại được.
+- `test_tv4_ok_and_error_results_reach_the_ui`: `ok` → text + `model tv4-v1` + `42 ms`; `error` → trạng thái `Lỗi`, meta không có "ms".
 
 **Chạy thật trên thiết bị của máy phát triển** (cửa sổ ẩn, cùng đường code với nút Bắt đầu/Dừng):
 
@@ -122,6 +139,16 @@ TS_FIRST_LAST   [47, 66, 97] ... [1937, 1985, 2049]
 ```
 
 `audio.wav` = 44 + 32.032×4 = 128.172 byte → đúng float32 mono, không lượng tử hoá. Bản ghi chứa giọng/mặt người thu nên nằm ở thư mục tạm và **đã xoá ngay** sau khi đọc số liệu; không có dữ liệu cá nhân nào vào Git.
+
+**Chạy thật với mốc thời gian và adapter (giới hạn 1,5 s):**
+
+```text
+LIMIT        True duration | dur_ms 1801 | samples 23712 | frames 46
+AUDIO_TIMING block_count 57 | first_block_start_ms 1 | last_block_end_ms 1487 | overflow 0
+FRAMES      46 | span_ms 1458 | fps 30.864 | playback_s 1.49 | captured_s 1.48
+```
+
+Trước khi sửa fps, cùng cấu hình cho `fps=111.111` (median 9 ms vì frame dồn cục bộ) → phát 0,4 s cho bản thu 1,5 s. Sau khi dùng fps trung bình trên khoảng timestamp, độ dài phát khớp độ dài thu.
 
 **Chưa kiểm tra:**
 
@@ -155,6 +182,7 @@ Bấm **Bắt đầu** → nhãn đáy phải hiện độ phân giải camera v
 - **Phần cứng:** chưa có thiết bị hiển thị; Ngày 7 chưa chốt nên chưa thể nói kính có trong demo tuần 4 hay không.
 - **Bộ nhớ:** đã có giới hạn thời lượng/số frame ở `Recorder` (mặc định 15 s / 450 frame), nhưng vẫn giữ frame trong RAM tới khi kết thúc lượt; nếu cần thu dài phải stream thẳng ra đĩa.
 - **Chưa chốt với TV2/TV3:** nơi lưu mẫu thật (thư mục nào, ai giữ), ai thu, số mẫu và cách đặt `sample_id` ngoài `tv5-<epoch_ms>`.
+- **Đồng bộ A/V:** mốc audio là xấp xỉ theo block (offset có thể âm), chưa hiệu chuẩn với TV4/TV3; cần một buổi đo chung trước khi dùng cho đánh giá độ trễ.
 
 ## 6. Bàn giao, review và tích hợp
 

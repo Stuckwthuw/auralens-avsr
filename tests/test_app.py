@@ -40,6 +40,16 @@ class TestAuralensApp(unittest.TestCase):
     def tearDown(self) -> None:
         self.app._on_close()
 
+    def _wait_until(self, condition, timeout: float = 2.0) -> bool:
+        """Pump the Tk event loop until condition() is true (poll_queue runs at 100 ms)."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            self.root.update()
+            if condition():
+                return True
+            time.sleep(0.02)
+        return False
+
     def test_window_properties(self) -> None:
         """Verify window title, minimum size, and mock badge."""
         self.assertEqual(self.root.title(), "Auralens — Phụ đề thông minh")
@@ -168,6 +178,82 @@ class TestAuralensApp(unittest.TestCase):
         self.assertFalse(self.app.is_running)
         self.assertEqual(self.app.start_stop_btn.cget("text"), "Bắt đầu")
         self.assertIn(self.app.status_indicator.cget("text"), [STATUS_READY, STATUS_UNCERTAIN])
+
+    def test_tv4_missing_audio_result_shows_message_and_finishes(self) -> None:
+        """TV4 invalid/missing_audio (model_version và infer_ms = null) → UI đúng."""
+        self.app.handle_asr_result(
+            {
+                "sample_id": "tv4-missing-1",
+                "mode": "asr_free",
+                "text": "",
+                "status": "invalid",
+                "reason": "missing_audio",
+                "model_version": None,
+                "infer_ms": None,
+            }
+        )
+        self.assertTrue(
+            self._wait_until(
+                lambda: self.app.subtitle_label.cget("text") == "Thiếu âm thanh"
+            ),
+            "chưa hiển thị 'Thiếu âm thanh'",
+        )
+        self.assertEqual(self.app.status_indicator.cget("text"), STATUS_UNCERTAIN)
+
+        meta = self.app.subtitle_meta_label.cget("text")
+        self.assertIn("tv4-missing-1", meta)
+        self.assertNotIn("model", meta)
+        self.assertNotIn("ms", meta)
+
+        # Lượt đã kết thúc: nút trở về "Bắt đầu" và bấm lại được.
+        self.assertFalse(self.app.is_running)
+        self.assertEqual(self.app.start_stop_btn.cget("text"), "Bắt đầu")
+        self.app._on_start_stop()
+        self.root.update()
+        self.assertTrue(self.app.is_running)
+        self.app._on_start_stop()
+        self._wait_until(lambda: not self.app.is_running)
+
+    def test_tv4_ok_and_error_results_reach_the_ui(self) -> None:
+        """Kết quả ok hiển thị text + model/infer; lỗi hiển thị trạng thái Lỗi."""
+        self.app.handle_asr_result(
+            {
+                "sample_id": "tv4-ok-1",
+                "mode": "asr_free",
+                "text": "Xin chào bạn.",
+                "status": "ok",
+                "reason": None,
+                "model_version": "tv4-v1",
+                "infer_ms": 42,
+            }
+        )
+        self.assertTrue(
+            self._wait_until(
+                lambda: self.app.subtitle_label.cget("text") == "Xin chào bạn."
+            )
+        )
+        self.assertEqual(self.app.status_indicator.cget("text"), STATUS_READY)
+        meta = self.app.subtitle_meta_label.cget("text")
+        self.assertIn("model tv4-v1", meta)
+        self.assertIn("42 ms", meta)
+
+        self.app.handle_asr_result(
+            {
+                "sample_id": "tv4-err-1",
+                "status": "error",
+                "reason": "decode_failed",
+                "model_version": None,
+                "infer_ms": None,
+            }
+        )
+        self.assertTrue(
+            self._wait_until(
+                lambda: self.app.status_indicator.cget("text") == STATUS_ERROR
+            )
+        )
+        self.assertIn("Lỗi nhận dạng", self.app.subtitle_label.cget("text"))
+        self.assertNotIn("ms", self.app.subtitle_meta_label.cget("text"))
+        self.assertFalse(self.app.is_running)
 
 
 class FakeRecorder:
