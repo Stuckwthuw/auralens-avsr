@@ -1,8 +1,8 @@
-# TV3 — Hoàng Hiếu — Kiểm tra clip pilot khẩu hình
+# TV3 — Hoàng Hiếu — Hướng dẫn quay pilot khẩu hình
 
-Người phụ trách: Hoàng Hiếu — Kiểm tra clip pilot khẩu hình
+Người phụ trách: Hoàng Hiếu — Hướng dẫn quay pilot khẩu hình
 
-Vai trò: Thị giác máy tính và khẩu hình. Task hiện tại: TV3-PILOT-194716; xem [kết quả và bàn giao](../handoffs/tv3-pilot-194716.md). Giữ lịch sử công việc trong báo cáo tuần 1.
+Vai trò: Thị giác máy tính và khẩu hình. Task hiện tại: TV3-PILOT-GUIDE, đầu ra [hướng dẫn quay](../guides/tv3-pilot-recording.md); lịch sử pilot được giữ trong [báo cáo tuần 1](../progress/week-01/TV3.md).
 
 Thời gian: 4 tuần, khoảng 12 giờ/tuần: 2 giờ học, 7 giờ làm, 2 giờ kiểm tra/báo cáo và 1 giờ họp.
 

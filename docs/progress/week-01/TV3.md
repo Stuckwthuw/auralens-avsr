@@ -14,10 +14,12 @@
 - [x] Ngày 2–3: chạy Face Landmarker, tạo video phủ điểm và crop có lề trên clip pilot 194716. Đã kiểm tra file đầu ra; chưa có xác nhận người nhận. Xem [bàn giao clip](../../handoffs/tv3-pilot-194716.md).
 - [ ] Ngày 4: cung cấp cho TV4 một sample gồm chuỗi landmarks/crop, timestamp và cờ valid.
 - [ ] Ghi hành vi khi không có mặt, nhiều mặt, quay nghiêng hoặc miệng bị che. Trước mắt chỉ xử lý một người, không tự chọn ngẫu nhiên giữa nhiều người.
-- [ ] Viết hướng dẫn quay 1 trang cho TV1: mặt hướng camera, ánh sáng đủ, tránh rung, không đọc hết câu trước khi bắt đầu thu.
+- [x] Viết hướng dẫn quay ngắn cho TV1: [hướng dẫn và checklist pilot](../../guides/tv3-pilot-recording.md). Đã soạn, chờ review và thử áp dụng; chưa xác nhận TV1 tiếp nhận.
 - [ ] Kiểm tra 20 clip pilot; hỗ trợ tuyển 2 người và thu theo lịch chung.
 
 ## 2. Công việc thực tế và trạng thái
+
+Task: TV3-PILOT-GUIDE / Hoàng Hiếu — Hướng dẫn quay pilot tuần 1. Trạng thái: READY FOR REVIEW (tài liệu). Nhánh: `docs/tv3-hoang-hieu-pilot-guide`, base `2331e8b`. Đầu ra: [hướng dẫn quay và checklist từng clip](../../guides/tv3-pilot-recording.md), cùng cập nhật báo cáo và tên task trong kế hoạch cá nhân. Nội dung dựa trên kết quả pilot hiện có, tách điều kiện đề xuất khỏi số đo thật; không thay schema pilot hoặc hợp đồng TV4. Kiểm tra tài liệu: đối chiếu kế hoạch TV1/TV3 và bàn giao pilot, kiểm tra liên kết tương đối đạt; `git -c core.whitespace=cr-at-eol diff --check` đạt (giữ CRLF hiện có). Chưa chạy buổi thu theo hướng dẫn mới, chưa có review độc lập. Người nhận dự kiến: TV1 xem quy trình/nhãn, TV5 xem thao tác và cấu hình thu. Tiếp theo: xác nhận câu và 2 người pilot với TV1, thử quy trình trên một clip trước khi thu cả bộ 20 đoạn. Thời gian thực tế chưa thống kê.
 
 Task: TV3-PILOT-194716 / Hoàng Hiếu — Kiểm tra clip pilot / nhánh `docs/tv3-hoang-hieu-pilot-194716`, base `2331e8b`. Trạng thái VERIFIED cho trích landmarks trên clip mới: 145/145 frame có điểm môi, 0 `no_face`, timestamp 0–4832 ms; tất cả timestamp khớp `ffprobe` và tọa độ hữu hạn. Đã xem toàn bộ frame thu nhỏ và 9 crop có điểm môi. Người dùng cung cấp nội dung câu, chưa xác minh audio độc lập hoặc gán lớp. Đầu ra, lệnh, môi trường, giới hạn và người nhận ở [bàn giao clip 194716](../../handoffs/tv3-pilot-194716.md). Tài liệu READY FOR REVIEW; chưa tích hợp TV4, chưa có kết quả phân loại. Chưa thống kê thời gian làm task.
 
@@ -48,6 +50,8 @@ Chưa báo cáo. Ghi tài liệu đã đọc, nội dung hiểu được, bài t
 Chưa báo cáo; không suy ra là không có vướng mắc. Ghi lỗi, cách tái hiện, điều đã thử, người có thể hỗ trợ và phần độc lập vẫn tiếp tục được.
 
 ## 6. Bàn giao, review và tích hợp
+
+Tài liệu hướng dẫn quay được chuẩn bị trong cùng nhánh/commit với báo cáo này; lịch sử Git của nhánh là bằng chứng thay đổi. Nội dung để mở PR: **[TV3] Hoàng Hiếu — Hướng dẫn quay và kiểm tra pilot khẩu hình**. Phạm vi review: hướng dẫn thu, cách kiểm tra từng clip và giới hạn `valid`; không có thay đổi mã chạy. Trạng thái READY FOR REVIEW chỉ áp dụng task tài liệu này, không xác nhận nhánh V đã tích hợp.
 
 Đã ghi [bàn giao pilot](../../handoffs/tv3-face-landmarker-pilot.md) để TV4 xem cách đọc timestamp và trạng thái invalid. JSON pilot chưa phải hợp đồng chung; clip thứ ba ngắn và có điểm môi ở mọi frame với cấu hình một người, nhưng chưa được xác nhận nhãn/định dạng để TV4 chạy tích hợp. Chưa có review độc lập hoặc xác nhận tích hợp.
 
