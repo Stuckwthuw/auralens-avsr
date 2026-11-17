@@ -1,0 +1,61 @@
+{
+  "mock": true,
+  "sample_id": "mock_001",
+  "start_ms": 0,
+  "end_ms": 1000,
+  "audio": {
+    "sample_id": "mock_001",
+    "start_ms": 0,
+    "end_ms": 1000,
+    "class_order": [
+      "c00",
+      "c01",
+      "c02",
+      "c03",
+      "c04",
+      "c05",
+      "c06",
+      "c07",
+      "c08",
+      "c09"
+    ],
+    "scores": [
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1
+    ],
+    "valid": true,
+    "reason": null,
+    "infer_ms": 0,
+    "model_version": "mock-week01"
+  },
+  "vision": {
+    "sample_id": "mock_001",
+    "start_ms": 0,
+    "end_ms": 1000,
+    "class_order": [
+      "c00",
+      "c01",
+      "c02",
+      "c03",
+      "c04",
+      "c05",
+      "c06",
+      "c07",
+      "c08",
+      "c09"
+    ],
+    "scores": null,
+    "valid": false,
+    "reason": "missing_source",
+    "infer_ms": 0,
+    "model_version": "mock-week01"
+  }
+}

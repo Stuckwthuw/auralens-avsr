@@ -164,3 +164,12 @@ Repository được khởi tạo ở chế độ **Private** để nhóm phát t
 ---
 
 *Auralens Research — từ giả thuyết có cơ sở đến bằng chứng có thể kiểm tra.*
+
+## Khung tích hợp tuần 1 của TV4
+
+Khung mock chạy bằng thư viện chuẩn Python. Pilot thật cần FFmpeg và các thư viện trong bản bàn giao. Xem [hợp đồng](contracts/README.md) và [bàn giao](docs/handoffs/tv4-week01-contracts.md) để biết phạm vi mock và các mục chờ dữ liệu thật.
+
+```sh
+python -m unittest discover -s tests -v
+python -m auralens.pipeline contracts/fixtures/valid.json
+```

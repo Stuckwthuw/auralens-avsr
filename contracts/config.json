@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1-draft",
+  "class_order": [
+    "c00",
+    "c01",
+    "c02",
+    "c03",
+    "c04",
+    "c05",
+    "c06",
+    "c07",
+    "c08",
+    "c09"
+  ],
+  "audio_sample_rate": 16000,
+  "score_sum_tolerance": 1e-06
+}
