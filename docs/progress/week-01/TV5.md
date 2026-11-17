@@ -30,7 +30,7 @@ Trạng thái: **VERIFIED** (kiểm thử tự động).
 
 - `auralens/app/main_window.py`: `AuralensApp` với 2 chế độ, chọn nguồn A/V/AV, nút Bắt đầu/Dừng, vùng phụ đề 1–2 dòng (16–48 pt), đèn trạng thái 5 màu, chuyển tương phản, nhãn "⚠ Mô phỏng".
 - Luồng nền: worker thread + `queue.Queue` + `root.after(100, _poll_queue)`; snapshot `mode`/`source` trên main thread trước khi mở worker.
-- `tests/test_app.py`: 7 ca kiểm thử UI.
+- `tests/test_app.py`: 8 ca kiểm thử UI, gồm `test_subtitle_wraplength_follows_resize`: `wraplength` theo bề rộng vùng phụ đề (rộng − 48 px, chặn dưới 200 px) và nhận cả sự kiện `<Configure>` thật khi cửa sổ đổi kích thước.
 
 ### Task B — Nối bộ thu thật vào ứng dụng (mới trong phiên này)
 
@@ -81,11 +81,11 @@ Môi trường: Windows, Python 3.14.7, Tkinter 9.0, OpenCV 5.0.0, sounddevice 0
 **Kiểm thử tự động** — `python -m unittest discover tests`:
 
 ```text
-Ran 18 tests in 3.528s
+Ran 19 tests in 4.063s
 OK
 ```
 
-18/18 đạt, gồm 3 ca tích hợp thiết bị và 8 ca cho phần lưu mẫu / giới hạn:
+19/19 đạt, gồm 3 ca tích hợp thiết bị, 8 ca cho phần lưu mẫu / giới hạn và 1 ca cho xuống dòng khi resize:
 
 - `test_live_turn_opens_records_stops_and_releases`: mở → thu → Dừng → đóng; nhãn thiết bị lấy từ `device_info`; phụ đề là "Đã thu…" với `status=uncertain`.
 - `test_close_window_mid_recording_releases_devices`: đóng cửa sổ giữa lượt thu vẫn gọi `close()`.
@@ -93,6 +93,7 @@ OK
 - `test_live_turn_writes_audio_video_and_manifest`: lượt thu (Recorder giả) tạo đủ `audio.wav`, `video.avi`, `manifest.json`; kiểm tra header float32 16 kHz, đọc lại được frame và các trường `device_info`/`frame_timestamps_ms`/`created_at`.
 - `test_limit_reached_is_reported_and_saved`: chạm giới hạn → phụ đề báo "giới hạn", manifest ghi `limit_reached=true`.
 - `test_writes_audio_video_and_manifest`, `test_audio_is_float32_wav`, `test_without_frames_omits_video`, `test_rejects_unsafe_sample_id` (storage), `test_duration_limit_stops_buffering`, `test_invalid_limit_is_rejected` (Recorder): dữ liệu numpy tổng hợp, không cần phần cứng.
+- `test_subtitle_wraplength_follows_resize`: rộng 500 px → `wraplength=452`; rộng 100 px → chặn dưới `200`; bắn `<Configure>` thật với rộng 700 px → `wraplength=652`.
 
 **Chạy thật trên thiết bị của máy phát triển** (cửa sổ ẩn, cùng đường code với nút Bắt đầu/Dừng):
 

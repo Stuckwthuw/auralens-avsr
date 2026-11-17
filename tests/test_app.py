@@ -103,6 +103,32 @@ class TestAuralensApp(unittest.TestCase):
         self.assertEqual(self.app.dark_mode, initial_mode)
         self.root.update()
 
+    def test_subtitle_wraplength_follows_resize(self) -> None:
+        """Xuống dòng theo bề rộng vùng phụ đề, không hẹp dưới 200 px."""
+        wraplength = lambda: int(str(self.app.subtitle_label.cget("wraplength")))
+
+        # Giá trị đầu phụ thuộc bề rộng cửa sổ lúc dựng, chỉ cần lớn hơn chặn dưới.
+        self.assertGreater(wraplength(), 200)
+        self.assertTrue(
+            self.app.subtitle_box.bind("<Configure>"),
+            "vùng phụ đề chưa gắn handler <Configure>",
+        )
+
+        class _Resize:
+            width = 500
+
+        self.app._on_subtitle_box_resize(_Resize())
+        self.assertEqual(wraplength(), 452)  # 500 - 48 padding
+
+        _Resize.width = 100
+        self.app._on_subtitle_box_resize(_Resize())
+        self.assertEqual(wraplength(), 200)  # chặn dưới, chữ không bị cắt
+
+        # Sự kiện <Configure> thật phải đi qua cùng handler.
+        self.app.subtitle_box.event_generate("<Configure>", width=700, height=300)
+        self.root.update()
+        self.assertEqual(wraplength(), 652)
+
     def test_status_indicator_and_subtitle_update(self) -> None:
         """Verify _update_subtitle updates subtitle text and status pill."""
         statuses = [STATUS_READY, STATUS_RECORDING, STATUS_PROCESSING, STATUS_UNCERTAIN, STATUS_ERROR]

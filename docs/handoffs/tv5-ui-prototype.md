@@ -45,7 +45,7 @@
    ```powershell
    python -m unittest discover tests
    ```
-   Kết quả: 7/7 tests passed trong 3.19 giây:
+   Kết quả: 19/19 tests passed (số liệu và danh sách ca mới ở `docs/progress/week-01/TV5.md` mục 4):
    - `test_window_properties`: Kiểm tra kích thước tối thiểu >= 800x400, tiêu đề cửa sổ, nhãn mô phỏng.
    - `test_mode_selection_and_source_visibility`: Kiểm tra chuyển chế độ và ẩn/hiện bộ chọn A/V/AV.
    - `test_font_size_controls`: Kiểm tra nút +/-, slider và chặn biên [16, 48].
