@@ -3,7 +3,7 @@
 - Người phụ trách: TV5 — Ứng dụng, hiển thị, phụ đề và phần cứng. (Tên thật: chưa xác định — chưa điền theo mẫu "Họ tên — Nhiệm vụ đang làm".)
 - Trạng thái: IN PROGRESS. Giao diện và bộ thu đã có bằng chứng kiểm tra; nhiệm vụ kiểm kê phần cứng, thu pilot với TV2/TV3 và quyết định Ngày 7 chưa xong.
 - Thời gian bắt đầu/kết thúc tuần: Tuần 01.
-- Cập nhật lần cuối: 2026-11-16.
+- Cập nhật lần cuối: 2026-11-17.
 - Kế hoạch gốc: [phân công TV5](../../plans/05_thanh_vien_5_ung_dung_hien_thi_phan_cung.md).
 
 > Báo cáo này tách rõ ba mức: đã kiểm tra tự động, đã chạy trên thiết bị thật, và chưa kiểm tra. Không có kết quả nhận dạng thật nào được tạo ra trong tuần này vì pipeline TV4 chưa bàn giao; ứng dụng báo "chưa có pipeline nhận dạng" thay vì hiển thị câu giả.
@@ -126,7 +126,7 @@ Bấm **Bắt đầu** → nhãn đáy phải hiện độ phân giải camera v
 ## 6. Bàn giao, review và tích hợp
 
 - Bản bàn giao: [tv5-ui-prototype.md](../../handoffs/tv5-ui-prototype.md) (đã bổ sung mục 6 về bộ thu thật).
-- Nhánh: `feat/tv5-ui-capture-week01`. Chưa push, chưa mở PR, chưa merge — theo AGENTS.md mục 13.
+- Nhánh: `feat/tv5-ui-capture-week01` — đã push và mở PR [#9](https://github.com/Stuckwthuw/auralens-avsr/pull/9); chưa merge, đang chờ người review/tích hợp của nhóm (AGENTS.md mục 13).
 - Trạng thái: **READY FOR REVIEW** cho Task A/B/C. Chưa có REVIEWED/INTEGRATED.
 - Người nhận: TV4 (nối pipeline vào `_process_live` hoặc thay chỗ đặt kết quả), TV2 (kiểm tra 16 kHz mono float32 và hợp đồng `sample_id`), TV1 (dùng app để thử khả dụng).
 
