@@ -1,6 +1,6 @@
 # TV5 — Tuần 01: Giao diện mẫu, thu dữ liệu và quyết định phần cứng
 
-- Người phụ trách: TV5 — Ứng dụng, hiển thị, phụ đề và phần cứng. (Tên thật: chưa xác định — chưa điền theo mẫu "Họ tên — Nhiệm vụ đang làm".)
+- Người phụ trách: TV5 — Trần Quang Huy — Ứng dụng, hiển thị, phụ đề và phần cứng.
 - Trạng thái: IN PROGRESS. Giao diện và bộ thu đã có bằng chứng kiểm tra; nhiệm vụ kiểm kê phần cứng, thu pilot với TV2/TV3 và quyết định Ngày 7 chưa xong.
 - Thời gian bắt đầu/kết thúc tuần: Tuần 01.
 - Cập nhật lần cuối: 2026-11-17.
