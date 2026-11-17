@@ -19,7 +19,7 @@
 
 Ghi chú cho hai ô còn trống:
 
-- Ô "bộ thu pilot": phần **code** đã xong và đã chạy thật (mục 2, Task B) nhưng chưa có bàn giao dữ liệu cho TV2/TV3 và chưa ghi file — nên chưa tick.
+- Ô "bộ thu pilot": `Recorder` **đã được app dùng** trong `_process_live` (mở → thu → dừng → nhả thiết bị, qua `_tao_recorder()`), nhưng **chưa ghi audio/video ra file** (frame và mẫu âm thanh chỉ nằm trong RAM; `recorder.py` không có `imwrite`/`np.save`/`wavfile`) và **chưa bàn giao dữ liệu pilot cho TV2/TV3** (chưa có file `sample_id`, `device_info`, timestamp xuất ra đĩa, chưa có manifest) — nên chưa tick.
 - `docs/hardware_checklist.md` đã tạo nhưng toàn bộ ô còn "Chưa điền" → Ngày 1 và Ngày 7 chưa đạt.
 
 ## 2. Công việc thực tế và trạng thái
