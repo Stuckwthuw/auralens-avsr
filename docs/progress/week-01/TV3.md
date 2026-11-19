@@ -1,23 +1,25 @@
 # TV3 — Hoàng Hiếu — Tuần 01: Đọc camera và trích vùng miệng
 
-- Người phụ trách: Hoàng Hiếu — Thị giác máy tính và khẩu hình.
+- Người phụ trách: Hoàng Hiếu — Đo landmarks trong pilot hai người.
 - Trạng thái: IN PROGRESS.
 - Thời gian bắt đầu/kết thúc tuần: chưa xác định ngày bắt đầu dự án.
-- Cập nhật lần cuối: 2026-11-16, kiểm tra clip pilot 194716 và tạo video phủ điểm môi.
+- Cập nhật lần cuối: 2026-11-19, đo landmarks trong bốn clip bổ sung.
 - Kế hoạch gốc: [phân công TV3](../../plans/03_thanh_vien_3_thi_giac_khau_hinh.md).
 
-> Đã có số đo webcam, quan sát trực tiếp và kết quả khảo sát trên 9 clip riêng biệt. Chưa đồng nghĩa đạt bộ 20 clip có nhãn từ 2 người của TV1. Chỉ đánh dấu khi có bằng chứng; tách công việc đang làm với kết quả đã được kiểm tra và tích hợp.
+> Đã có số đo webcam và khảo sát trên 13 clip riêng biệt (9 clip trước và 4 clip mới). Bộ 20 clip có nhãn theo kế hoạch TV1 vẫn chờ xác nhận.
 
 ## 1. Nhiệm vụ được giao trong tuần
 
 - [ ] Ngày 1: cùng TV5 thử webcam; xác định độ phân giải/fps thực đo, ánh sáng và khoảng cách để miệng đủ rõ. Có thể bắt đầu bằng 720p, mục tiêu khoảng 25–30 fps nếu máy đáp ứng; đây là cấu hình đề xuất, không phải yêu cầu cố định.
 - [x] Ngày 2–3: chạy Face Landmarker, tạo video phủ điểm và crop có lề trên clip pilot 194716. Đã kiểm tra file đầu ra; chưa có xác nhận người nhận. Xem [bàn giao clip](../../handoffs/tv3-pilot-194716.md).
 - [ ] Ngày 4: cung cấp cho TV4 một sample gồm chuỗi landmarks/crop, timestamp và cờ valid.
-- [ ] Ghi hành vi khi không có mặt, nhiều mặt, quay nghiêng hoặc miệng bị che. Trước mắt chỉ xử lý một người, không tự chọn ngẫu nhiên giữa nhiều người.
+- [x] Ghi hành vi khi không thấy mặt, nhiều mặt, quay nghiêng và che miệng. Ca nhiều mặt được đo bằng công cụ pilot ngoại tuyến. Chi tiết ở [bàn giao](../../handoffs/tv3-two-person.md).
 - [x] Viết hướng dẫn quay ngắn cho TV1: [hướng dẫn và checklist pilot](../../guides/tv3-pilot-recording.md). Đã soạn, chờ review và thử áp dụng; chưa xác nhận TV1 tiếp nhận.
 - [ ] Kiểm tra 20 clip pilot; hỗ trợ tuyển 2 người và thu theo lịch chung.
 
 ## 2. Công việc thực tế và trạng thái
+
+TV3-PILOT-TWO-FACES / Hoàng Hiếu — Đo landmarks tuần 1. VERIFIED cho phép đo 442 frame và đối chiếu timestamp với ffprobe. Có 332 frame trả hai bộ điểm, 110 frame trả một bộ. Ba ảnh kiểm tra ở clip che miệng cho thấy điểm nằm trên tay. Mã, giới hạn và hướng dẫn tái lập ở [bàn giao pilot](../../handoffs/tv3-two-person.md). READY FOR REVIEW cho thay đổi này. Chờ TV1 chốt split trước khi fit.
 
 Task: TV3-PILOT-GUIDE / Hoàng Hiếu — Hướng dẫn quay pilot tuần 1. Trạng thái: READY FOR REVIEW (tài liệu). Nhánh: `docs/tv3-hoang-hieu-pilot-guide`, base `2331e8b`. Đầu ra: [hướng dẫn quay và checklist từng clip](../../guides/tv3-pilot-recording.md), cùng cập nhật báo cáo và tên task trong kế hoạch cá nhân. Nội dung dựa trên kết quả pilot hiện có, tách điều kiện đề xuất khỏi số đo thật; không thay schema pilot hoặc hợp đồng TV4. Kiểm tra tài liệu: đối chiếu kế hoạch TV1/TV3 và bàn giao pilot, kiểm tra liên kết tương đối đạt; `git -c core.whitespace=cr-at-eol diff --check` đạt (giữ CRLF hiện có). Chưa chạy buổi thu theo hướng dẫn mới, chưa có review độc lập. Người nhận dự kiến: TV1 xem quy trình/nhãn, TV5 xem thao tác và cấu hình thu. Tiếp theo: xác nhận câu và 2 người pilot với TV1, thử quy trình trên một clip trước khi thu cả bộ 20 đoạn. Thời gian thực tế chưa thống kê.
 
