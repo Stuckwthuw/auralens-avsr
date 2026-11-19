@@ -1,8 +1,8 @@
-# TV3 — Hoàng Hiếu — Hướng dẫn quay pilot khẩu hình
+# TV3 — Hoàng Hiếu — Đo landmarks trong pilot hai người
 
-Người phụ trách: Hoàng Hiếu — Hướng dẫn quay pilot khẩu hình
+Người phụ trách: Hoàng Hiếu — Đo landmarks trong pilot hai người
 
-Vai trò: Thị giác máy tính và khẩu hình. Task hiện tại: TV3-PILOT-GUIDE, đầu ra [hướng dẫn quay](../guides/tv3-pilot-recording.md); lịch sử pilot được giữ trong [báo cáo tuần 1](../progress/week-01/TV3.md).
+Vai trò: Thị giác máy tính và khẩu hình. Task hiện tại: TV3-PILOT-TWO-FACES, [bàn giao phép đo](../handoffs/tv3-two-person.md). Task trước đã soạn [hướng dẫn quay](../guides/tv3-pilot-recording.md). Xem [báo cáo tuần 1](../progress/week-01/TV3.md).
 
 Thời gian: 4 tuần, khoảng 12 giờ/tuần: 2 giờ học, 7 giờ làm, 2 giờ kiểm tra/báo cáo và 1 giờ họp.
 
